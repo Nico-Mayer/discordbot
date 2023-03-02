@@ -9,10 +9,8 @@
 		"**/.classpath": true,
 		"**/.project": true,
 		"**/.settings": true,
-		"**/.factorypath": true,
-		".vscode": true,
-		"node_modules": true
+		"**/.factorypath": true
 	},
-	"hide-files.files": [".vscode"],
-	"cSpell.words": ["highestaudio", "slashcommands", "ytdl"]
+	"hide-files.files": [],
+	"cSpell.words": ["highestaudio", "searchterms", "slashcommands", "ytdl"]
 }
