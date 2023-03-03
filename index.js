@@ -28,8 +28,8 @@ client.player = new Player(client, {
 })
 
 // --- FIX FOR DISCORD PLAYER ---
-client.player.on('connectionCreate', (queue) => {
-	queue.connection.voiceConnection.on('stateChange', (oldState, newState) => {
+client.player.events.on('connection', (queue) => {
+	queue.dispatcher.voiceConnection.on('stateChange', (oldState, newState) => {
 		const oldNetworking = Reflect.get(oldState, 'networking')
 		const newNetworking = Reflect.get(newState, 'networking')
 
