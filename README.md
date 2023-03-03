@@ -1,8 +1,4 @@
-<center>
-	<img src="https://ih1.redbubble.net/image.476617173.0868/flat,750x,075,f-pad,750x1000,f8f8f8.u7.jpg" style='width: 100px; height: 100px; border-radius: 50%;'/>
-</center>
-
-# My Personal Discord Bot (DJ Rosine)
+# My Personal Discord Bot 
 
 This is a custom-built Discord bot that I've created for my own personal use.
 It has a variety of features that I find useful for managing my server.
