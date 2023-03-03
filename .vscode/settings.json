@@ -13,11 +13,28 @@
 	},
 	"hide-files.files": [],
 	"cSpell.words": [
+		"armorperlevel",
+		"attackdamage",
+		"attackdamageperlevel",
+		"attackrange",
+		"attackspeed",
+		"attackspeedperlevel",
+		"critperlevel",
 		"highestaudio",
+		"hpperlevel",
+		"hpregen",
+		"hpregenperlevel",
+		"movespeed",
+		"mpperlevel",
+		"mpregen",
+		"mpregenperlevel",
 		"nohup",
+		"regen",
 		"Rosine",
 		"searchterms",
 		"slashcommands",
+		"spellblock",
+		"spellblockperlevel",
 		"ytdl"
 	]
 }
