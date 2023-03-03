@@ -85,10 +85,10 @@ module.exports = {
 				requestedBy: interaction.user,
 				searchEngine: QueryType.AUTO,
 			})
-			if (result.tracks.length < 1)
+			if (result.tracks.length === 0)
 				return interaction.editReply('No results found')
 			const song = result.tracks[0]
-			await queue.addTrack(result.tracks)
+			await queue.addTrack(song)
 			embed.setDescription(`Added ${song.title} (${song.url}) to queue`)
 			embed.setThumbnail(song.thumbnail)
 			embed.setFooter({ text: `Duration: ${song.duration}` })
