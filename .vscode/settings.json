@@ -12,5 +12,11 @@
 		"**/.factorypath": true
 	},
 	"hide-files.files": [],
-	"cSpell.words": ["highestaudio", "searchterms", "slashcommands", "ytdl"]
+	"cSpell.words": [
+		"highestaudio",
+		"nohup",
+		"searchterms",
+		"slashcommands",
+		"ytdl"
+	]
 }

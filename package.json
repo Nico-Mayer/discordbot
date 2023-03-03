@@ -5,7 +5,8 @@
 	"main": "index.js",
 	"scripts": {
 		"start": "node index.js",
-		"load": "node index.js load"
+		"load": "node index.js load",
+		"nohup": "nohup node index.js &"
 	},
 	"author": "",
 	"license": "ISC",
