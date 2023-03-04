@@ -1,4 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js')
+const { useMasterPlayer } = require('discord-player')
+const player = useMasterPlayer()
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -11,8 +13,8 @@ module.exports = {
 				.setMinValue(1)
 		),
 
-	run: async ({ client, interaction }) => {
-		const queue = client.player.nodes.get(interaction.guildId)
+	run: async ({ interaction }) => {
+		const queue = player.nodes.get(interaction.guildId)
 		if (!queue || !queue.node.isPlaying()) {
 			return await interaction.editReply(
 				'There are no songs in the queue'

@@ -20,32 +20,12 @@ let champs = []
 const client = new Discord.Client({
 	intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates],
 })
-client.player = new Player(client, {
+new Player(client, {
 	ytdlOptions: {
 		quality: 'highestaudio',
-		highWaterMark: 1 << 25,
+		highWaterMark: 1 << 27,
 	},
 })
-
-// --- FIX FOR DISCORD PLAYER ---
-client.player.events.on('connection', (queue) => {
-	queue.dispatcher.voiceConnection.on('stateChange', (oldState, newState) => {
-		const oldNetworking = Reflect.get(oldState, 'networking')
-		const newNetworking = Reflect.get(newState, 'networking')
-
-		const networkStateChangeHandler = (
-			oldNetworkState,
-			newNetworkState
-		) => {
-			const newUdp = Reflect.get(newNetworkState, 'udp')
-			clearInterval(newUdp?.keepAliveInterval)
-		}
-
-		oldNetworking?.off('stateChange', networkStateChangeHandler)
-		newNetworking?.on('stateChange', networkStateChangeHandler)
-	})
-})
-// --- END FIX ---
 
 client.slashcommands = new Discord.Collection()
 
@@ -60,6 +40,13 @@ for (const file of commandFiles) {
 }
 
 if (LOAD_SLASH) {
+	loadCommands()
+} else {
+	setupHandlers()
+	client.login(TOKEN)
+}
+
+function loadCommands() {
 	const rest = new REST({ version: '10' }).setToken(TOKEN)
 	console.log('Deploying slash commands...')
 	rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), {
@@ -73,7 +60,9 @@ if (LOAD_SLASH) {
 			console.error(err)
 			process.exit(1)
 		})
-} else {
+}
+
+function setupHandlers() {
 	client.once(Events.ClientReady, (c) => {
 		console.log(`Ready! Logged in as ${c.user.tag}`)
 	})
@@ -88,6 +77,4 @@ if (LOAD_SLASH) {
 		}
 		handleCommand()
 	})
-
-	client.login(TOKEN)
 }

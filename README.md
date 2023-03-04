@@ -1,4 +1,4 @@
-# My Personal Discord Bot 
+# My Personal Discord Bot
 
 This is a custom-built Discord bot that I've created for my own personal use.
 It has a variety of features that I find useful for managing my server.
@@ -13,6 +13,8 @@ It has a variety of features that I find useful for managing my server.
 
 -   `/queue` - _Returns all songs currently in queue_
 -   `/quit` - _Stops the Music and disconnects from VC_
+-   `/pause` - _Pauses the currently playing song_
+-   `/resume` - _Resumes the paused song in queue_
 
 **League of Legends:**
 
@@ -22,7 +24,7 @@ It has a variety of features that I find useful for managing my server.
 ## ToDo`s
 
 -   [ ] Implement fuzzy search for `/champ_stats name`
--   [ ] `/pause` & `/resume` commands
+-   [x] `/pause` & `/resume` commands
 -   [ ] `/shuffle` command
 -   [ ] `/info` command
 -   [ ] `/skip` command

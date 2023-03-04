@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js')
-const { QueryType, SearchResult } = require('discord-player')
+const { QueryType, SearchResult, useMasterPlayer } = require('discord-player')
+const player = useMasterPlayer()
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -40,18 +41,18 @@ module.exports = {
 						.setRequired(true)
 				)
 		}),
-	run: async ({ client, interaction }) => {
+	run: async ({ interaction }) => {
 		if (!interaction.member.voice.channel)
 			return interaction.editReply(
 				'You must be in a voice channel to use this command'
 			)
 
-		let embed = new EmbedBuilder()
+		let embed = null
 		let result = null
 
 		if (interaction.options.getSubcommand() === 'song') {
 			let url = interaction.options.getString('url')
-			const res = await client.player.search(url, {
+			const res = await player.search(url, {
 				requestedBy: interaction.user,
 				searchEngine: QueryType.YOUTUBE_VIDEO,
 			})
@@ -59,12 +60,12 @@ module.exports = {
 				return interaction.editReply('No results found')
 			const song = res.tracks[0]
 			result = song
-			embed.setDescription(`Added ${song.title} (${song.url}) to queue`)
-			embed.setThumbnail(song.thumbnail)
-			embed.setFooter({ text: `Duration: ${song.duration}` })
+			embed = createEmbed(song.title, song.url, song.thumbnail, {
+				text: `Duration: ${song.duration}`,
+			})
 		} else if (interaction.options.getSubcommand() === 'playlist') {
 			let url = interaction.options.getString('url')
-			const res = await client.player.search(url, {
+			const res = await player.search(url, {
 				requestedBy: interaction.user,
 				searchEngine: QueryType.YOUTUBE_PLAYLIST,
 			})
@@ -73,19 +74,25 @@ module.exports = {
 				return interaction.editReply('No results found')
 
 			const playlist = res.playlist
-			const searchResult = new SearchResult(client.player, {
+			const searchResult = new SearchResult(player, {
 				playlist,
 				tracks: playlist.tracks,
 			})
 
 			result = searchResult
-			embed.setDescription(
-				`Added ${res.tracks.length} songs from ${playlist.title} (${playlist.url}) to queue`
+
+			embed = createEmbed(
+				playlist.title,
+				playlist.url,
+				playlist.tracks[0].thumbnail,
+				{
+					text: `Added Playlist with ${playlist.tracks.length} songs to queue`,
+				},
+				'#fff000'
 			)
-			embed.setThumbnail(playlist.tracks[0].thumbnail)
 		} else if (interaction.options.getSubcommand() === 'search') {
 			let url = interaction.options.getString('searchterms')
-			const res = await client.player.search(url, {
+			const res = await player.search(url, {
 				requestedBy: interaction.user,
 				searchEngine: QueryType.AUTO,
 			})
@@ -93,12 +100,12 @@ module.exports = {
 				return interaction.editReply('No results found')
 			const song = res.tracks[0]
 			result = song
-			embed.setDescription(`Added ${song.title} (${song.url}) to queue`)
-			embed.setThumbnail(song.thumbnail)
-			embed.setFooter({ text: `Duration: ${song.duration}` })
+			embed = createEmbed(song.title, song.url, song.thumbnail, {
+				text: `Duration: ${song.duration}`,
+			})
 		}
 		if (!result) return interaction.editReply('No results found')
-		await client.player.play(interaction.member.voice.channel, result, {
+		await player.play(interaction.member.voice.channel, result, {
 			nodeOptions: {
 				metadata: {
 					channel: interaction.channel,
@@ -115,4 +122,14 @@ module.exports = {
 		})
 		return interaction.editReply({ embeds: [embed] })
 	},
+}
+
+function createEmbed(title, description, thumbnail, footer, color = '#FF0000') {
+	const embed = new EmbedBuilder()
+		.setTitle(title)
+		.setDescription(description)
+		.setColor(color)
+		.setThumbnail(thumbnail)
+		.setFooter(footer)
+	return embed
 }
