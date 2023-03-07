@@ -6,7 +6,7 @@
 	"scripts": {
 		"start": "nodemon index.js",
 		"load": "node index.js load",
-		"nohup": "nohup nodemon -x index.js &"
+		"nohup": "nohup nodemon -I index.js"
 	},
 	"author": "",
 	"license": "ISC",
