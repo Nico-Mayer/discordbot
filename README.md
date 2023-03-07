@@ -21,6 +21,11 @@ It has a variety of features that I find useful for managing my server.
 -   `/random_champ` - _Picks a random LoL champ_
 -   `/champ_stats name` - _Searches for champ name and returns stats from lol api_
 
+**Clownsnasen**
+
+-   `/clownsnase target` _Gives a User a 'Clownsnase'_
+-   `/nasen` _Shows the leaderboard witch user has collected the most 'Clownsnasen'_
+
 ## ToDo`s
 
 -   [ ] Implement fuzzy search for `/champ_stats name`
