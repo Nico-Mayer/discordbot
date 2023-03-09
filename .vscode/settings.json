@@ -9,9 +9,18 @@
 		"**/.classpath": true,
 		"**/.project": true,
 		"**/.settings": true,
-		"**/.factorypath": true
+		"**/.factorypath": true,
+		".vscode": true,
+		"node_modules": true,
+		".gitignore": true,
+		".env.example": true
 	},
-	"hide-files.files": [],
+	"hide-files.files": [
+		".vscode",
+		"node_modules",
+		".gitignore",
+		".env.example"
+	],
 	"cSpell.words": [
 		"armorperlevel",
 		"attackdamage",
@@ -19,6 +28,7 @@
 		"attackrange",
 		"attackspeed",
 		"attackspeedperlevel",
+		"audioonly",
 		"clownsnase",
 		"Clownsnasen",
 		"critperlevel",
