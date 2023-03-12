@@ -1,8 +1,9 @@
+import { Player } from 'discord-player'
 import { Client, Events, GatewayIntentBits } from 'discord.js'
 import commands from '../commands'
 import keys from '../keys'
-import { registerCommands } from '../utils'
 import { MyClient } from '../types'
+import { registerCommands } from '../utils'
 
 const client: MyClient = new Client({
 	intents: [
@@ -10,6 +11,14 @@ const client: MyClient = new Client({
 		GatewayIntentBits.GuildVoiceStates,
 		GatewayIntentBits.GuildMembers,
 	],
+})
+
+new Player(client, {
+	ytdlOptions: {
+		filter: 'audioonly',
+		highWaterMark: 1 << 30,
+		dlChunkSize: 0,
+	},
 })
 
 registerCommands(client, commands)

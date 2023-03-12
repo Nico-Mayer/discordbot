@@ -12,15 +12,9 @@
 		"**/.factorypath": true,
 		".vscode": true,
 		"node_modules": true,
-		".gitignore": true,
 		".env.example": true
 	},
-	"hide-files.files": [
-		".vscode",
-		"node_modules",
-		".gitignore",
-		".env.example"
-	],
+	"hide-files.files": [".vscode", "node_modules", ".env.example"],
 	"cSpell.words": [
 		"armorperlevel",
 		"attackdamage",
@@ -30,16 +24,19 @@
 		"attackspeedperlevel",
 		"audioonly",
 		"clownsnase",
+		"clownsnasen",
 		"Clownsnasen",
 		"critperlevel",
 		"highestaudio",
 		"hpperlevel",
 		"hpregen",
 		"hpregenperlevel",
+		"leaderboard",
 		"movespeed",
 		"mpperlevel",
 		"mpregen",
 		"mpregenperlevel",
+		"nasen",
 		"Nasen",
 		"nohup",
 		"regen",
@@ -49,5 +46,6 @@
 		"spellblock",
 		"spellblockperlevel",
 		"ytdl"
-	]
+	],
+	"cSpell.language": "en,de-DE"
 }

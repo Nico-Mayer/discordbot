@@ -1,4 +1,4 @@
-import { Keys } from '../types/index'
+import { Keys } from '../types'
 
 export const keys: Keys = {
 	clientToken: process.env.CLIENT_TOKEN ?? 'nil',

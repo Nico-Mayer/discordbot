@@ -8,7 +8,7 @@ import commands from './index'
 export default {
 	data: new SlashCommandBuilder()
 		.setName('help')
-		.setDescription('Show a list of all commands'),
+		.setDescription('Zeigt liste aller Commands'),
 	async execute(interaction: ChatInputCommandInteraction) {
 		await interaction.reply({ embeds: [createEmbed()] })
 	},
@@ -16,7 +16,7 @@ export default {
 
 function createEmbed() {
 	const embed = new EmbedBuilder()
-		.setTitle('All Commands:')
+		.setTitle('Commands:')
 		.setDescription(createDescription())
 		.setColor('#0099ff')
 	return embed

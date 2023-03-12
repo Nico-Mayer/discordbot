@@ -3,13 +3,12 @@ import {
 	ChatInputCommandInteraction,
 	EmbedBuilder,
 } from 'discord.js'
-import test from 'node:test'
 import { getChampions } from '../utils'
 
 export default {
 	data: new SlashCommandBuilder()
 		.setName('random_champ')
-		.setDescription('Get a random League of Legends champion'),
+		.setDescription('Gibt einen zufälligen LoL Champion aus'),
 	async execute(interaction: ChatInputCommandInteraction) {
 		const champions = await getChampions()
 		const randomIndex = Math.floor(Math.random() * champions.length)
