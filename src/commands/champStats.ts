@@ -29,7 +29,7 @@ export default {
 		const championName = interaction.options.getString('champion', true)
 		const result = fuse.search(championName)
 
-		if (result.length >= 0)
+		if (result.length <= 0)
 			return interaction.reply({
 				content: `Champion \`${championName}\` nicht gefunden.`,
 				ephemeral: true,
@@ -42,6 +42,9 @@ export default {
 			embed.setTitle(champ.name)
 			embed.setDescription(
 				'```javascript' + getStats(champ as unknown as Champion) + '```'
+			)
+			embed.setThumbnail(
+				`http://ddragon.leagueoflegends.com/cdn/11.5.1/img/champion/${champ.image.full}`
 			)
 			await interaction.reply({ embeds: [embed] })
 		}
