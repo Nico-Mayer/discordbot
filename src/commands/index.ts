@@ -1,11 +1,14 @@
-import ping from './ping'
-import help from './help'
-import randomChamp from './randomChamp'
-import champStats from './champStats'
-import clownsnase from './clownsnase'
-import nasen from './nasen'
-import play from './play'
-import quit from './quit'
+import ping from './general/ping'
+import help from './general/help'
+import randomChamp from './lol/randomChamp'
+import champStats from './lol/champStats'
+import clownsnase from './nasen/clownsnase'
+import nasen from './nasen/nasen'
+import play from './music/play'
+import quit from './music/quit'
+import pause from './music/pause'
+import resume from './music/resume'
+import queue from './music/queue'
 
 export default [
 	help,
@@ -16,4 +19,7 @@ export default [
 	nasen,
 	play,
 	quit,
+	pause,
+	resume,
+	queue,
 ]

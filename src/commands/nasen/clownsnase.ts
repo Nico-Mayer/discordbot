@@ -3,7 +3,7 @@ import {
 	ChatInputCommandInteraction,
 	EmbedBuilder,
 } from 'discord.js'
-
+import keys from '../../keys'
 export default {
 	data: new SlashCommandBuilder()
 		.setName('clownsnase')
@@ -19,7 +19,7 @@ export default {
 		const embed = new EmbedBuilder()
 		const target = interaction.options.getUser('bre', true)
 		const author = interaction.user
-		const url = 'https://expressjs-postgres-production-733d.up.railway.app'
+		const url = keys.nasenUrl
 
 		const res = await fetch(url + `/nasen?id=${target.id}`).then((res) => {
 			if (res.ok) {

@@ -50,7 +50,6 @@ export default {
 			return interaction.reply('Du musst in einem Sprachkanal sein!')
 
 		let embed = new EmbedBuilder()
-		let result = null
 
 		const response = await player?.search(search, {
 			requestedBy: member,
@@ -61,11 +60,11 @@ export default {
 			return interaction.reply('No results found')
 
 		const song = response.tracks[0]
-		result = song
+
 		embed = createEmbed(song)
 
-		if (!result) return interaction.reply('No results found')
-		await player?.play(member.voice.channel, result, {
+		if (!song) return interaction.reply('No results found')
+		await player?.play(member.voice.channel, song, {
 			nodeOptions: {
 				metadata: {
 					channel: interaction.channel,

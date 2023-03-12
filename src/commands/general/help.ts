@@ -3,7 +3,7 @@ import {
 	ChatInputCommandInteraction,
 	EmbedBuilder,
 } from 'discord.js'
-import commands from './index'
+import commands from '../index'
 
 export default {
 	data: new SlashCommandBuilder()

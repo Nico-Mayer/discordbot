@@ -13,13 +13,7 @@ const client: MyClient = new Client({
 	],
 })
 
-new Player(client, {
-	ytdlOptions: {
-		filter: 'audioonly',
-		highWaterMark: 1 << 30,
-		dlChunkSize: 0,
-	},
-})
+new Player(client)
 
 registerCommands(client, commands)
 

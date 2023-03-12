@@ -1,6 +1,6 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction } from 'discord.js'
 import { useMasterPlayer } from 'discord-player'
-import keys from '../keys'
+import keys from '../../keys'
 
 export default {
 	data: new SlashCommandBuilder()
@@ -10,8 +10,10 @@ export default {
 		const player = useMasterPlayer()
 		const queue = player?.nodes.get(keys.guildId)
 		if (!queue)
-			return await interaction.editReply('There is no songs in the queue')
+			return await interaction.reply(
+				'Aktuell kein song in der Warteschlange'
+			)
 		queue.delete()
-		await interaction.editReply('Tschüss! Euer DJ Rosine')
+		await interaction.reply('Tschüss! Euer DJ Rosine')
 	},
 }

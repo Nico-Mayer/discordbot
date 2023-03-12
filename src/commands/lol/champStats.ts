@@ -4,8 +4,8 @@ import {
 	EmbedBuilder,
 } from 'discord.js'
 import Fuse from 'fuse.js'
-import { getChampions } from '../utils'
-import { Champion } from '../types'
+import { getChampions } from '../../utils'
+import { Champion } from '../../types'
 
 const options = {
 	includeScore: true,

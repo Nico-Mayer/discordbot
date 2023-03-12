@@ -1,9 +1,10 @@
 import {
-	SlashCommandBuilder,
 	ChatInputCommandInteraction,
 	EmbedBuilder,
+	SlashCommandBuilder,
 } from 'discord.js'
-import { CnUser } from '../types'
+import keys from '../../keys'
+import { CnUser } from '../../types'
 
 export default {
 	data: new SlashCommandBuilder()
@@ -11,7 +12,7 @@ export default {
 		.setDescription('Zeigt Clownsnasen Leaderboard!'),
 	async execute(interaction: ChatInputCommandInteraction) {
 		const embed = new EmbedBuilder()
-		const url = 'https://expressjs-postgres-production-733d.up.railway.app'
+		const url = keys.nasenUrl
 
 		try {
 			const res = await fetch(url + '/stats').then((res) => {
