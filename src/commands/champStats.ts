@@ -54,23 +54,23 @@ export default {
 function getStats(champion: Champion) {
 	const stats = `
 HP = ${champion.stats.hp}
-HPLevel = ${champion.stats.hpperlevel}
+HPLevel = ${champion.stats.hpperlevel}\n
 MP = ${champion.stats.mp}
-MPLevel = ${champion.stats.mpperlevel}
-MoveSpeed = ${champion.stats.movespeed}
+MPLevel = ${champion.stats.mpperlevel}\n
+MoveSpeed = ${champion.stats.movespeed}\n
 Armor = ${champion.stats.armor}
-ArmorLevel = ${champion.stats.armorperlevel}
+ArmorLevel = ${champion.stats.armorperlevel}\n
 MagicResist = ${champion.stats.spellblock}
-MagicResistLevel = ${champion.stats.spellblockperlevel}
-AttackRange = ${champion.stats.attackrange}
+MagicResistLevel = ${champion.stats.spellblockperlevel}\n
+AttackRange = ${champion.stats.attackrange}\n
 HPregen = ${champion.stats.hpregen}
-HPregenLevel = ${champion.stats.hpregenperlevel}
+HPregenLevel = ${champion.stats.hpregenperlevel}\n
 MPregen = ${champion.stats.mpregen}
-MPregenLevel = ${champion.stats.mpregenperlevel}
+MPregenLevel = ${champion.stats.mpregenperlevel}\n
 Crit = ${champion.stats.crit}
-CritLevel = ${champion.stats.critperlevel}
+CritLevel = ${champion.stats.critperlevel}\n
 AttackDamage = ${champion.stats.attackdamage}
-AttackDamageLevel = ${champion.stats.attackdamageperlevel}
+AttackDamageLevel = ${champion.stats.attackdamageperlevel}\n
 AttackSpeed = ${champion.stats.attackspeed}
 AttackSpeedLevel = ${champion.stats.attackspeedperlevel}
 			`

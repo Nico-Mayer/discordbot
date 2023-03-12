@@ -1,4 +1,6 @@
 import { Keys } from '../types'
+import * as dotenv from 'dotenv'
+dotenv.config()
 
 export const keys: Keys = {
 	clientToken: process.env.CLIENT_TOKEN ?? 'nil',
