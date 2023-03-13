@@ -1,6 +1,6 @@
 import { Keys } from '../types'
 import * as dotenv from 'dotenv'
-import path, { resolve } from 'path'
+import path from 'path'
 
 dotenv.config({ path: path.resolve(__dirname, '../../.env') })
 
