@@ -1,6 +1,6 @@
 import { Player } from 'discord-player'
 import { Client, Events, GatewayIntentBits } from 'discord.js'
-import commands from '../commands'
+import { commands } from '../commands'
 import keys from '../keys'
 import { MyClient } from '../types'
 import { registerCommands } from '../utils'

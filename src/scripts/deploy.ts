@@ -1,4 +1,4 @@
-import commands from '../commands'
+import { commands } from '../commands'
 
 import { REST, Routes } from 'discord.js'
 import keys from '../keys'

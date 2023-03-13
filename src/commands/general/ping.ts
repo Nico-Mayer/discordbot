@@ -5,7 +5,6 @@ export default {
 		.setName('ping')
 		.setDescription('Replies with Pong!'),
 	async execute(interaction: ChatInputCommandInteraction) {
-		console.log(interaction.client)
 		await interaction.reply('Pong!')
 	},
 }

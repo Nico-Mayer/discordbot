@@ -1,8 +1,6 @@
+import { SlashCommandBuilder } from 'discord.js'
+
 export interface Command {
-	data: {
-		name: string
-		description: string
-		options?: {}
-	}
+	data: Omit<SlashCommandBuilder, 'addSubcommand' | 'addSubcommandGroup'>
 	execute: (interaction: any) => void
 }

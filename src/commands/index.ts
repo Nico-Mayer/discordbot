@@ -1,25 +1,16 @@
-import ping from './general/ping'
-import help from './general/help'
-import randomChamp from './lol/randomChamp'
-import champStats from './lol/champStats'
-import clownsnase from './nasen/clownsnase'
-import nasen from './nasen/nasen'
-import play from './music/play'
-import quit from './music/quit'
-import pause from './music/pause'
-import resume from './music/resume'
-import queue from './music/queue'
+import { Collection, Command } from '../types'
+import general from './general'
+import lol from './lol'
+import music from './music'
+import nasen from './nasen'
 
-export default [
-	help,
-	ping,
-	randomChamp,
-	champStats,
-	clownsnase,
-	nasen,
-	play,
-	quit,
-	pause,
-	resume,
-	queue,
-]
+export const collections = [general, lol, music, nasen]
+export const commands = getCommands(collections)
+
+function getCommands(collections: Collection[]) {
+	let commands: Command[] = []
+	for (const collection of collections) {
+		commands = [...commands, ...collection.commands]
+	}
+	return commands
+}

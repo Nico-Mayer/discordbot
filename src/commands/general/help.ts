@@ -3,7 +3,7 @@ import {
 	ChatInputCommandInteraction,
 	EmbedBuilder,
 } from 'discord.js'
-import commands from '../index'
+import { collections } from '../index'
 
 export default {
 	data: new SlashCommandBuilder()
@@ -24,8 +24,12 @@ function createEmbed() {
 
 function createDescription() {
 	let description = ''
-	commands.forEach((command) => {
-		description += `\`/${command.data.name}\` - ${command.data.description}\n`
+	collections.forEach((collection) => {
+		description += `**${collection.emoji} - ${collection.name}:**\n`
+		collection.commands.forEach((command) => {
+			description += `\`/${command.data.name}\` - ${command.data.description}\n`
+		})
+		description += '\n'
 	})
 	return description
 }

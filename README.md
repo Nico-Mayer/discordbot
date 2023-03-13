@@ -5,30 +5,29 @@ It has a variety of features that I find useful for managing my server.
 
 ## Commands
 
-**Music:**
+**📜 - General:**
+`/ping` - Replies with Pong!
+`/help` - Zeigt liste aller Commands
 
--   `/play song` - _Plays a song from youtube based on URL_
--   `/play playlist` - _Plays a playlist from youtube based on URL_
--   `/play search` - _Searches a song on youtube based on searchterms and plays it_
+**🪄 - League of Legends:**
+`/champ_stats` - Zeigt alle Stats eines LoL Champions
+`/random_champ` - Gibt einen zufälligen LoL Champion aus
 
--   `/queue` - _Returns all songs currently in queue_
--   `/quit` - _Stops the Music and disconnects from VC_
--   `/pause` - _Pauses the currently playing song_
--   `/resume` - _Resumes the paused song in queue_
+**🎵 - Music:**
+`/pause` - Pausiert den Aktuellen Song
+`/queue` - Zeigt alle Songs in der Warteschlange
+`/play` - Spielt einen Song von YouTube ab.
+`/quit` - Stoppt den Musik Bot
+`/resume` - Setzt den Pausierten Song fort
 
-**League of Legends:**
-
--   `/random_champ` - _Picks a random LoL champ_
--   `/champ_stats name` - _Searches for champ name and returns stats from lol api_
-
-**Clownsnasen**
-
--   `/clownsnase target` _Gives a User a 'Clownsnase'_
--   `/nasen` _Shows the leaderboard witch user has collected the most 'Clownsnasen'_
+**👃 - Nasen:**
+`/clownsnase` - Gib einem Bre eine Clownsnase!
+`/nasen` - Zeigt Clownsnasen Leaderboard!
 
 ## ToDo`s
 
--   [ ] Implement fuzzy search for `/champ_stats name`
+-   [x] Implement fuzzy search for `/champ_stats name`
+-   [x] Update to Typescript
 -   [x] `/pause` & `/resume` commands
 -   [ ] `/shuffle` command
 -   [ ] `/info` command
