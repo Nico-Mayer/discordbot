@@ -31,3 +31,5 @@ It has a variety of features that I find useful for managing my server.
 -   [x] Update to Typescript
 -   [x] `/pause` & `/resume` commands
 -   [x] `/skip` command
+-   [ ] `/live summoner` command gives data for lol live game
+-   [ ] `/random_team` Generates a random lol team.
