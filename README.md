@@ -19,6 +19,7 @@ It has a variety of features that I find useful for managing my server.
 `/play` - Spielt einen Song von YouTube ab.
 `/quit` - Stoppt den Musik Bot
 `/resume` - Setzt den Pausierten Song fort
+`/skip` - Springt zum naechsten song in der Warteschlange
 
 **👃 - Nasen:**
 `/clownsnase` - Gib einem Bre eine Clownsnase!
@@ -29,6 +30,4 @@ It has a variety of features that I find useful for managing my server.
 -   [x] Implement fuzzy search for `/champ_stats name`
 -   [x] Update to Typescript
 -   [x] `/pause` & `/resume` commands
--   [ ] `/shuffle` command
--   [ ] `/info` command
--   [ ] `/skip` command
+-   [x] `/skip` command

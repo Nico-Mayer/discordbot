@@ -27,7 +27,7 @@ export default {
 
 		if (page > totalPages) {
 			return await interaction.reply(
-				`The queue only has ${totalPages} pages`
+				`Warteschlange hat nur ${totalPages} Seiten`
 			)
 		}
 
@@ -46,14 +46,14 @@ export default {
 			embeds: [
 				new EmbedBuilder()
 					.setDescription(
-						`**Currently Playing**\n` +
+						`**Spielt gerade**\n` +
 							(currentSong
 								? `\`[${currentSong.duration}]\` ${currentSong.title} -- <@${currentSong.requestedBy?.id}>`
 								: 'None') +
-							`\n\n**Queue**\n${queueString}`
+							`\n\n**Warteschlange**\n${queueString}`
 					)
 					.setFooter({
-						text: `Page ${page + 1} of ${totalPages}`,
+						text: `Seite ${page + 1} of ${totalPages}`,
 					})
 					.setColor('#00FF00')
 

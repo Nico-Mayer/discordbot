@@ -1,4 +1,8 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction } from 'discord.js'
+import {
+	SlashCommandBuilder,
+	ChatInputCommandInteraction,
+	EmbedBuilder,
+} from 'discord.js'
 import { useMasterPlayer } from 'discord-player'
 import keys from '../../keys'
 
@@ -18,8 +22,11 @@ export default {
 			return await interaction.reply('Song ist bereits pausiert')
 		}
 		queue.node.pause()
-		await interaction.reply(
-			':play_pause:  Song pausiert `/resume` um wiedergabe fortzusetzen'
+		const embed = new EmbedBuilder().setTitle(':pause_button: - Pause')
+		embed.setColor('#ff0000')
+		embed.setDescription(
+			`Song pausiert \`/resume\` um wiedergabe fortzusetzen`
 		)
+		await interaction.reply({ embeds: [embed] })
 	},
 }

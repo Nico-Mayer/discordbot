@@ -84,7 +84,8 @@ export default {
 }
 function createEmbed(item: Track) {
 	const embed = new EmbedBuilder()
-		.setTitle(item.title)
+
+		.setTitle(`${item.title}`)
 		.setDescription(
 			`<@${item.requestedBy?.id}> hat diesen Song zur Warteschlange hinzugefügt.`
 		)
