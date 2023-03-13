@@ -36,3 +36,4 @@ This is a custom-built Discord bot that I've created for my own server.
 -   [x] `/skip` command
 -   [ ] `/live summoner` command gives data for lol live game
 -   [ ] `/random_team` Generates a random lol team.
+-   [ ] Gruende fuer `clownsnasen`
