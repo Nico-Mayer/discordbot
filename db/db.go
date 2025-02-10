@@ -19,13 +19,7 @@ func init() {
 		godotenv.Load()
 	}
 
-	var connStr string
-
-	if os.Getenv("ENV") == "PROD" {
-		connStr = os.Getenv("DATABASE_PRIVATE_URL")
-	} else {
-		connStr = os.Getenv("DATABASE_URL")
-	}
+	connStr := os.Getenv("DATABASE_URL")
 
 	// This is needed for Railway to make sure the private network
 	// is stable before connecting to the DB
