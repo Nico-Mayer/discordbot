@@ -5,6 +5,7 @@ import (
 	"log"
 	"log/slog"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -25,6 +26,8 @@ func init() {
 	} else {
 		connStr = os.Getenv("DATABASE_URL")
 	}
+
+	time.Sleep(time.Second * 3)
 
 	var err error
 	DB, err = sql.Open("postgres", connStr)
