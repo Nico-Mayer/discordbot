@@ -2,7 +2,6 @@ package db
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"log/slog"
 	"os"
@@ -19,14 +18,14 @@ func init() {
 		godotenv.Load()
 	}
 
-	connStr := fmt.Sprintf(
-		"postgresql://%s:%s@%s:%s/%s",
-		os.Getenv("PGUSER"),
-		os.Getenv("PGPASSWORD"),
-		os.Getenv("PGHOST"),
-		os.Getenv("PGPORT"),
-		os.Getenv("PGDATABASE"),
-	)
+	var connStr string
+
+	if os.Getenv("ENV") == "PROD" {
+		connStr = os.Getenv("DATABASE_PRIVATE_URL")
+	} else {
+		connStr = os.Getenv("DATABASE_URL")
+	}
+
 	var err error
 	DB, err = sql.Open("postgres", connStr)
 	if err != nil {
