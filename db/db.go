@@ -27,6 +27,8 @@ func init() {
 		connStr = os.Getenv("DATABASE_URL")
 	}
 
+	// This is needed for Railway to make sure the private network
+	// is stable before connecting to the DB
 	time.Sleep(time.Second * 3)
 
 	var err error
