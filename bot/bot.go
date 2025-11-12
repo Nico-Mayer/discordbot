@@ -9,12 +9,13 @@ import (
 	disgobot "github.com/disgoorg/disgo/bot"
 	"github.com/disgoorg/disgo/events"
 	"github.com/disgoorg/disgo/gateway"
+	"github.com/nico-mayer/discordbot/cmd"
 	"github.com/nico-mayer/discordbot/config"
 )
 
 type bot struct {
 	Client        disgobot.Client
-	SlashCommands map[string]func(event *events.ApplicationCommandInteractionCreate, b *bot) error
+	SlashCommands map[string]*cmd.Cmd
 }
 
 var instance *bot
@@ -37,6 +38,8 @@ func newBot() *bot {
 				gateway.IntentMessageContent,
 			),
 		),
+
+		disgobot.WithEventListenerFunc(onApplicationCommand),
 	)
 
 	if err != nil {
@@ -49,10 +52,26 @@ func newBot() *bot {
 	}
 }
 
-func (b *bot) Start() error {
+func (b *bot) Start(commands map[string]*cmd.Cmd) error {
 	err := b.Client.OpenGateway(context.TODO())
 	if err != nil {
 		slog.Error("errors while connecting to gateway", slog.Any("err", err))
 	}
+	b.SlashCommands = commands
 	return err
+}
+
+func onApplicationCommand(event *events.ApplicationCommandInteractionCreate) {
+	data := event.SlashCommandInteractionData()
+	b := Get()
+
+	cmd, ok := b.SlashCommands[data.CommandName()]
+	if !ok {
+		slog.Info("unknown command", slog.String("command", data.CommandName()))
+		return
+	}
+	err := cmd.Handler(event)
+	if err != nil {
+		slog.Error("executing slash command", slog.String("command", data.CommandName()), "err:", err.Error())
+	}
 }

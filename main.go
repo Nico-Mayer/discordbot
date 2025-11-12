@@ -18,7 +18,7 @@ func main() {
 	slog.Info("disgo version", slog.String("version", disgo.Version))
 
 	bot := bot.Get()
-	if err := bot.Start(); err != nil {
+	if err := bot.Start(cmd.GetAll()); err != nil {
 		slog.Error("failed to start bot", slog.String("error", err.Error()))
 		return
 	}
