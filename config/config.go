@@ -5,14 +5,15 @@ import (
 	"os"
 	"sync"
 
+	"github.com/disgoorg/snowflake/v2"
 	"github.com/joho/godotenv"
 )
 
 type config struct {
 	ENV       string
 	TOKEN     string
-	GUILD_ID  string
-	CLIENT_ID string
+	GUILD_ID  snowflake.ID
+	CLIENT_ID snowflake.ID
 }
 
 var instance *config
@@ -35,8 +36,8 @@ func initConfig() *config {
 	return &config{
 		ENV:       getEnv("ENV", "PREV"),
 		TOKEN:     getRequiredEnv("TOKEN"),
-		GUILD_ID:  getRequiredEnv("GUILD_ID"),
-		CLIENT_ID: getRequiredEnv("CLIENT_ID"),
+		GUILD_ID:  snowflake.MustParse(getRequiredEnv("GUILD_ID")),
+		CLIENT_ID: snowflake.MustParse(getRequiredEnv("CLIENT_ID")),
 	}
 }
 

@@ -9,10 +9,11 @@ import (
 
 	"github.com/disgoorg/disgo"
 	"github.com/nico-mayer/discordbot/bot"
+	"github.com/nico-mayer/discordbot/cmd"
+	"github.com/nico-mayer/discordbot/config"
 )
 
 func main() {
-
 	slog.Info("starting...")
 	slog.Info("disgo version", slog.String("version", disgo.Version))
 
@@ -22,6 +23,7 @@ func main() {
 		return
 	}
 	defer bot.Client.Close(context.TODO())
+	cmd.RegisterSlashCommands(bot.Client, config.Get().GUILD_ID)
 
 	slog.Info("bot is now running. Press CTRL-C to exit.")
 	s := make(chan os.Signal, 1)
