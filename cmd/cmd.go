@@ -1,8 +1,7 @@
 package cmd
 
 import (
-	"log/slog"
-
+	"github.com/charmbracelet/log"
 	"github.com/disgoorg/disgo/bot"
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/events"
@@ -36,14 +35,14 @@ func GetAll() map[string]*Cmd {
 }
 
 func RegisterSlashCommands(client bot.Client, guildID snowflake.ID) {
-	slog.Info("Start command registration")
+	log.Info("start command registration")
 	metadata := make([]discord.ApplicationCommandCreate, 0, len(commands))
 	for _, cmd := range commands {
-		slog.Info("register cmd", "name", cmd.Meta.Name)
+		log.Info("register cmd", "name", cmd.Meta.Name)
 		metadata = append(metadata, cmd.Meta)
 	}
 
 	if _, err := client.Rest().SetGuildCommands(client.ApplicationID(), guildID, metadata); err != nil {
-		slog.Error("error while registering commands", slog.Any("err", err))
+		log.Error("while registering commands", "error", err.Error())
 	}
 }

@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"sync"
 
+	"github.com/charmbracelet/log"
 	"github.com/disgoorg/disgo"
 	disgobot "github.com/disgoorg/disgo/bot"
 	"github.com/disgoorg/disgo/cache"
@@ -45,6 +46,7 @@ func newBot() *bot {
 		),
 
 		disgobot.WithEventListenerFunc(onApplicationCommand),
+		disgobot.WithEventListeners(&events.ListenerAdapter{OnReady: onReady}),
 	)
 
 	if err != nil {
@@ -55,6 +57,10 @@ func newBot() *bot {
 	return &bot{
 		Client: client,
 	}
+}
+
+func onReady(event *events.Ready) {
+	log.Info("logged in as", "name", event.User.Username)
 }
 
 func (b *bot) Start() error {
