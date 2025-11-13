@@ -36,8 +36,10 @@ func GetAll() map[string]*Cmd {
 }
 
 func RegisterSlashCommands(client bot.Client, guildID snowflake.ID) {
-	metadata := make([]discord.ApplicationCommandCreate, len(commands))
+	slog.Info("Start command registration")
+	metadata := make([]discord.ApplicationCommandCreate, 0, len(commands))
 	for _, cmd := range commands {
+		slog.Info("register cmd", "name", cmd.Meta.Name)
 		metadata = append(metadata, cmd.Meta)
 	}
 

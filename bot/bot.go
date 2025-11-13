@@ -7,6 +7,7 @@ import (
 
 	"github.com/disgoorg/disgo"
 	disgobot "github.com/disgoorg/disgo/bot"
+	"github.com/disgoorg/disgo/cache"
 	"github.com/disgoorg/disgo/events"
 	"github.com/disgoorg/disgo/gateway"
 	"github.com/nico-mayer/discordbot/cmd"
@@ -32,10 +33,14 @@ func newBot() *bot {
 	config := config.Get()
 
 	client, err := disgo.New(config.TOKEN,
+		disgobot.WithCacheConfigOpts(
+			cache.WithCaches(cache.FlagVoiceStates, cache.FlagMembers, cache.FlagChannels),
+		),
 		disgobot.WithGatewayConfigOpts(
 			gateway.WithIntents(
+				gateway.IntentGuilds,
 				gateway.IntentGuildMessages,
-				gateway.IntentMessageContent,
+				gateway.IntentGuildVoiceStates,
 			),
 		),
 
@@ -52,12 +57,13 @@ func newBot() *bot {
 	}
 }
 
-func (b *bot) Start(commands map[string]*cmd.Cmd) error {
+func (b *bot) Start() error {
 	err := b.Client.OpenGateway(context.TODO())
 	if err != nil {
 		slog.Error("errors while connecting to gateway", slog.Any("err", err))
 	}
-	b.SlashCommands = commands
+	b.SlashCommands = cmd.GetAll()
+	cmd.RegisterSlashCommands(b.Client, config.Get().GUILD_ID)
 	return err
 }
 
