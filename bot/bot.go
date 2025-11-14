@@ -16,7 +16,7 @@ import (
 )
 
 type bot struct {
-	Client        disgobot.Client
+	Client        *disgobot.Client
 	SlashCommands map[string]*cmd.Cmd
 }
 
@@ -69,7 +69,7 @@ func (b *bot) Start() error {
 		slog.Error("errors while connecting to gateway", slog.Any("err", err))
 	}
 	b.SlashCommands = cmd.GetAll()
-	cmd.RegisterSlashCommands(b.Client, config.Get().GUILD_ID)
+	cmd.RegisterSlashCommands(*b.Client, config.Get().GUILD_ID)
 	return err
 }
 

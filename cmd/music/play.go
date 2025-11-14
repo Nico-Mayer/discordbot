@@ -26,7 +26,7 @@ var PlayCmdMeta = discord.SlashCommandCreate{
 func PlayCmdHandler(event *events.ApplicationCommandInteractionCreate) error {
 	query := event.SlashCommandInteractionData().String("url")
 
-	voiceState, ok := event.Client().Caches().VoiceState(*event.GuildID(), event.User().ID)
+	voiceState, ok := event.Client().Caches.VoiceState(*event.GuildID(), event.User().ID)
 	if !ok {
 		return event.CreateMessage(discord.MessageCreate{
 			Flags:   discord.MessageFlagEphemeral,
@@ -56,7 +56,7 @@ func PlayCmdHandler(event *events.ApplicationCommandInteractionCreate) error {
 	}
 
 	go func() {
-		conn := event.Client().VoiceManager().CreateConn(*event.GuildID())
+		conn := event.Client().VoiceManager.CreateConn(*event.GuildID())
 		if err = conn.Open(context.TODO(), *voiceState.ChannelID, false, false); err != nil {
 			slog.Error("connecting to voice channel", "err:", err.Error())
 		}

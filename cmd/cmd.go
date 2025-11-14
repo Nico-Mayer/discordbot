@@ -42,7 +42,7 @@ func RegisterSlashCommands(client bot.Client, guildID snowflake.ID) {
 		metadata = append(metadata, cmd.Meta)
 	}
 
-	if _, err := client.Rest().SetGuildCommands(client.ApplicationID(), guildID, metadata); err != nil {
+	if _, err := client.Rest.SetGuildCommands(client.ApplicationID, guildID, metadata); err != nil {
 		log.Error("while registering commands", "error", err.Error())
 	}
 }
