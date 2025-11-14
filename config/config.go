@@ -1,10 +1,10 @@
 package config
 
 import (
-	"log"
 	"os"
 	"sync"
 
+	"github.com/charmbracelet/log"
 	"github.com/disgoorg/snowflake/v2"
 	"github.com/joho/godotenv"
 )
@@ -44,6 +44,7 @@ func initConfig() *config {
 func getEnv(key, fallback string) string {
 	value := os.Getenv(key)
 	if value == "" {
+		log.Warn("env variable not set", "key", key, "fallback", fallback)
 		value = fallback
 	}
 	return value
@@ -52,7 +53,7 @@ func getEnv(key, fallback string) string {
 func getRequiredEnv(key string) string {
 	value := os.Getenv(key)
 	if value == "" {
-		panic("Environment variable " + key + " is required but not set.")
+		log.Fatal("Environment variable " + key + " is required but not set.")
 	}
 	return value
 }

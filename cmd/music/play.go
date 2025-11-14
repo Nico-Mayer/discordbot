@@ -1,14 +1,18 @@
 package music
 
 import (
+	"bufio"
 	"context"
+	"fmt"
 	"log/slog"
 	"os"
 	"os/exec"
 
+	"github.com/charmbracelet/log"
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/events"
 	"github.com/disgoorg/disgo/voice"
+	"github.com/disgoorg/ffmpeg-audio"
 )
 
 var PlayCmdMeta = discord.SlashCommandCreate{
@@ -34,13 +38,12 @@ func PlayCmdHandler(event *events.ApplicationCommandInteractionCreate) error {
 		})
 	}
 
-	if err := event.DeferCreateMessage(false); err != nil {
-		return err
-	}
-
 	cmd := exec.Command(
 		"yt-dlp", query,
 		"--extract-audio",
+		"--sleep-requests", "1.5",
+		"--min-sleep-interval", "60",
+		"--max-sleep-interval", "90",
 		"--audio-format", "opus",
 		"--no-playlist",
 		"-o", "-",
@@ -50,9 +53,18 @@ func PlayCmdHandler(event *events.ApplicationCommandInteractionCreate) error {
 	)
 	cmd.Stderr = os.Stderr
 
-	_, err := cmd.StdoutPipe()
+	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		slog.Error("error on yt-dlp command", "err", err)
+	}
+	if err != nil {
+		return event.CreateMessage(discord.MessageCreate{
+			Content: "Error creating stdout pipe: " + err.Error(),
+		})
+	}
+
+	if err = event.DeferCreateMessage(false); err != nil {
+		return err
 	}
 
 	go func() {
@@ -60,8 +72,24 @@ func PlayCmdHandler(event *events.ApplicationCommandInteractionCreate) error {
 		if err = conn.Open(context.TODO(), *voiceState.ChannelID, false, false); err != nil {
 			slog.Error("connecting to voice channel", "err:", err.Error())
 		}
+		defer conn.Close(context.TODO())
 		if err = conn.SetSpeaking(context.TODO(), voice.SpeakingFlagMicrophone); err != nil {
 			slog.Error("setting bot to speaking", "err:", err.Error())
+		}
+
+		if err = cmd.Start(); err != nil {
+			fmt.Print(err)
+		}
+
+		opusProvider := ffmpeg.New(context.TODO(), bufio.NewReader(stdout))
+		defer opusProvider.Close()
+
+		conn.SetOpusFrameProvider(opusProvider)
+
+		fmt.Println("play")
+
+		if err = cmd.Wait(); err != nil {
+			log.Error("error waiting for yt-dlp: ", err)
 		}
 	}()
 
