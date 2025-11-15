@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"os"
 	"os/exec"
+	"time"
 
 	"github.com/charmbracelet/log"
 	"github.com/disgoorg/disgo/discord"
@@ -41,9 +42,6 @@ func PlayCmdHandler(event *events.ApplicationCommandInteractionCreate) error {
 	cmd := exec.Command(
 		"yt-dlp", query,
 		"--extract-audio",
-		"--sleep-requests", "1.5",
-		"--min-sleep-interval", "60",
-		"--max-sleep-interval", "90",
 		"--audio-format", "opus",
 		"--no-playlist",
 		"-o", "-",
@@ -86,11 +84,19 @@ func PlayCmdHandler(event *events.ApplicationCommandInteractionCreate) error {
 
 		conn.SetOpusFrameProvider(opusProvider)
 
-		fmt.Println("play")
+		event.Client().Rest.CreateFollowupMessage(event.ApplicationID(), event.Token(), discord.MessageCreate{
+			Content: "Playing this song",
+		})
 
 		if err = cmd.Wait(); err != nil {
-			log.Error("error waiting for yt-dlp: ", err)
+			log.Error("waiting for yt-dlp: ", err)
 		}
+
+		if err = opusProvider.Wait(); err != nil {
+			log.Error("opus mopus")
+			conn.SetOpusFrameProvider(nil)
+		}
+		time.Sleep(time.Second * 10)
 	}()
 
 	return nil

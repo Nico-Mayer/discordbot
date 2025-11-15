@@ -5,6 +5,7 @@ go 1.25.3
 require (
 	github.com/charmbracelet/log v0.4.2
 	github.com/disgoorg/disgo v0.19.0-rc.12
+	github.com/disgoorg/ffmpeg-audio v0.0.0-20250829163925-73409e4eab51
 	github.com/disgoorg/snowflake/v2 v2.0.3
 	github.com/joho/godotenv v1.5.1
 )
@@ -19,7 +20,6 @@ require (
 	github.com/clipperhouse/displaywidth v0.5.0 // indirect
 	github.com/clipperhouse/stringish v0.1.1 // indirect
 	github.com/clipperhouse/uax29/v2 v2.3.0 // indirect
-	github.com/disgoorg/ffmpeg-audio v0.0.0-20250829163925-73409e4eab51 // indirect
 	github.com/disgoorg/json/v2 v2.0.0 // indirect
 	github.com/disgoorg/omit v1.0.0 // indirect
 	github.com/go-logfmt/logfmt v0.6.1 // indirect
