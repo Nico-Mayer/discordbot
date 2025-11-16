@@ -49,7 +49,7 @@ func PlayCmdHandler(event *events.ApplicationCommandInteractionCreate) error {
 		"--quiet",
 		"--ignore-errors",
 		"--no-warnings",
-		"--buffer-size", "16K",
+		// "--buffer-size", "16K",
 	)
 	cmd.Stderr = os.Stderr
 
