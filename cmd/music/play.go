@@ -14,6 +14,7 @@ import (
 	"github.com/disgoorg/disgo/events"
 	"github.com/disgoorg/disgo/voice"
 	"github.com/disgoorg/ffmpeg-audio"
+	"github.com/nico-mayer/discordbot/utils"
 )
 
 var PlayCmdMeta = discord.SlashCommandCreate{
@@ -48,21 +49,19 @@ func PlayCmdHandler(event *events.ApplicationCommandInteractionCreate) error {
 		"--quiet",
 		"--ignore-errors",
 		"--no-warnings",
+		"--buffer-size", "16K",
 	)
 	cmd.Stderr = os.Stderr
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		slog.Error("error on yt-dlp command", "err", err)
-	}
-	if err != nil {
 		return event.CreateMessage(discord.MessageCreate{
-			Content: "Error creating stdout pipe: " + err.Error(),
+			Content: "Error creating stdout pipe (yt-dlp): " + err.Error(),
 		})
 	}
 
 	if err = event.DeferCreateMessage(false); err != nil {
-		return err
+		log.Error("creating defer message", "err", err)
 	}
 
 	go func() {
@@ -81,11 +80,12 @@ func PlayCmdHandler(event *events.ApplicationCommandInteractionCreate) error {
 
 		opusProvider := ffmpeg.New(context.TODO(), bufio.NewReader(stdout))
 		defer opusProvider.Close()
+		time.Sleep(1000 * time.Millisecond)
 
 		conn.SetOpusFrameProvider(opusProvider)
 
-		event.Client().Rest.CreateFollowupMessage(event.ApplicationID(), event.Token(), discord.MessageCreate{
-			Content: "Playing this song",
+		utils.CreateFollowupMessage(event, discord.MessageCreate{
+			Content: fmt.Sprintf("playing %s", query),
 		})
 
 		if err = cmd.Wait(); err != nil {
@@ -93,7 +93,7 @@ func PlayCmdHandler(event *events.ApplicationCommandInteractionCreate) error {
 		}
 
 		if err = opusProvider.Wait(); err != nil {
-			log.Error("opus mopus")
+			log.Info("track finished")
 			conn.SetOpusFrameProvider(nil)
 		}
 		time.Sleep(time.Second * 10)
