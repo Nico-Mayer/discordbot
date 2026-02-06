@@ -29,4 +29,4 @@ COPY --from=prerelease /usr/src/app/package.json .
 # run the app
 USER bun
 EXPOSE 3000/tcp
-ENTRYPOINT [ "bun", "run", "build/bot.js" ]
+ENTRYPOINT [ "bun", "run", "bot.js" ]
