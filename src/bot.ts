@@ -20,7 +20,6 @@ declare module "discord.js" {
 const client = new Client({
 	intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates],
 })
-
 client.lavalink = generateLavalinkClient(client)
 
 await registerCommands()
@@ -33,9 +32,7 @@ client.once(Events.ClientReady, (c) => {
 })
 client.on("interactionCreate", async (interaction) => {
 	if (!interaction.isChatInputCommand()) return
-	if (interaction.commandName === "play") {
-		commands.get("play")?.Handler(interaction)
-	}
+	commands.get(interaction.commandName)?.handler(interaction)
 })
 
 client.lavalink.nodeManager.on("connect", (node) => {

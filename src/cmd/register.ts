@@ -10,7 +10,7 @@ export async function registerCommands() {
 
 	for (const cmd of Array.from(commands.values())) {
 		await rest.put(Routes.applicationCommands(config.APP_ID), {
-			body: [cmd.Metadata.toJSON()],
+			body: [cmd.metadata.toJSON()],
 		})
 	}
 

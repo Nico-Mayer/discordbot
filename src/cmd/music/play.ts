@@ -1,5 +1,13 @@
+import { formatDuration, getYtThumbnailUrl } from "@lib/utils"
 import type { Command } from "@types"
-import { type GuildMember, MessageFlags, SlashCommandBuilder } from "discord.js"
+import {
+	type ChatInputCommandInteraction,
+	EmbedBuilder,
+	type GuildMember,
+	MessageFlags,
+	SlashCommandBuilder,
+} from "discord.js"
+import type { Player, Track } from "lavalink-client"
 
 const meta = new SlashCommandBuilder()
 	.setName("play")
@@ -9,8 +17,8 @@ const meta = new SlashCommandBuilder()
 	)
 
 export const play: Command = {
-	Metadata: meta as SlashCommandBuilder,
-	Handler: async (interaction) => {
+	metadata: meta as SlashCommandBuilder,
+	handler: async (interaction) => {
 		if (!interaction.guildId) return
 
 		const sender = interaction.member as GuildMember
@@ -23,7 +31,6 @@ export const play: Command = {
 		}
 		await interaction.deferReply()
 		const lavalink = interaction.client.lavalink
-		// Player erstellen oder holen
 		const player =
 			lavalink.getPlayer(interaction.guildId) ||
 			lavalink.createPlayer({
@@ -35,7 +42,6 @@ export const play: Command = {
 				volume: 100,
 			})
 
-		// Mit Voice Channel verbinden
 		if (!player.connected) await player.connect()
 
 		const query = interaction.options.getString("query", true)
@@ -44,18 +50,52 @@ export const play: Command = {
 		if (!result.tracks.length || !result.tracks || !result.tracks[0]) {
 			return interaction.editReply({ content: "keine tracks gefunden!" })
 		}
-		// Track zur Queue hinzufügen
+
 		await player.queue.add(result.loadType === "playlist" ? result.tracks : result.tracks[0])
 
-		// Abspielen wenn nicht bereits am Spielen
-		if (!player.playing) await player.play()
+		if (player.playing) {
+			return interaction.editReply({
+				embeds: [queueReply(result.tracks[0] as Track, interaction, player)],
+			})
+		}
 
+		await player.play()
 		const track = result.tracks[0]
+
+		// TODO: evtl auch playlist stuff bei need implementieren
 		await interaction.editReply({
-			content:
-				result.loadType === "playlist"
-					? `✅ Playlist mit ${result.tracks.length} Tracks hinzugefügt!`
-					: `✅ Jetzt spielt: **${track.info.title}** von **${track.info.author}**`,
+			embeds: [singleSongReply(track as Track, interaction)],
 		})
 	},
+}
+
+function singleSongReply(track: Track, interaction: ChatInputCommandInteraction) {
+	return new EmbedBuilder()
+		.setColor(0x5865f2)
+		.setAuthor({ name: "🎶 Jetzt spielt", iconURL: interaction.client.user.displayAvatarURL() })
+		.setTitle(track.info.title)
+		.setURL(track.info.uri)
+		.setDescription(`von **${track.info.author}**`)
+		.setImage(getYtThumbnailUrl(track))
+		.addFields({ name: "⏱️ Dauer", value: formatDuration(track.info.duration), inline: true })
+		.setFooter({ text: "Let it rip, euer Rosine" })
+}
+
+function queueReply(track: Track, interaction: ChatInputCommandInteraction, player: Player) {
+	return new EmbedBuilder()
+		.setColor(0x5865f2) // Discord blurple
+		.setAuthor({ name: "📝 Zur Warteschlange hinzugefügt" })
+		.setTitle(track.info.title)
+		.setURL(track.info.uri)
+		.setThumbnail(track.info.artworkUrl || getYtThumbnailUrl(track))
+		.addFields(
+			{ name: "👤 Künstler", value: track.info.author, inline: true },
+			{ name: "⏱️ Dauer", value: formatDuration(track.info.duration), inline: true },
+			{ name: "📋 Position", value: `\`#${player.queue.tracks.length}\``, inline: true },
+		)
+		.setFooter({
+			text: `Angefordert von ${interaction.user.username}`,
+			iconURL: interaction.user.displayAvatarURL(),
+		})
+		.setTimestamp()
 }

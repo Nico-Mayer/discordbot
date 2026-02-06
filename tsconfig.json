@@ -28,7 +28,8 @@
 
 		"paths": {
 			"@config/*": ["./src/config/*"],
-			"@types": ["./src/types/index"]
+			"@types": ["./src/types/index"],
+			"@lib/*": ["./src/lib/*"]
 		}
 	}
 }

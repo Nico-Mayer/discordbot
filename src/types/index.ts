@@ -6,7 +6,6 @@ import type {
 } from "discord.js"
 
 export type Command = {
-	Metadata: SlashCommandBuilder
-
-	Handler: (interaction: ChatInputCommandInteraction) => Promise<InteractionResponse | Message | undefined>
+	metadata: SlashCommandBuilder
+	handler: (interaction: ChatInputCommandInteraction) => Promise<InteractionResponse | Message | undefined>
 }
