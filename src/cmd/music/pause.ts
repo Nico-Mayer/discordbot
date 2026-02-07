@@ -8,13 +8,14 @@ const meta = new SlashCommandBuilder().setName("pause").setDescription("Pausiert
 export const pauseCmd: Command = {
 	metadata: meta,
 	handler: async (interaction) => {
-		const { ok, errorMsg, guildId, voiceId } = userInVoiceAndGuild(interaction)
-		if (!ok) {
+		const validation = userInVoiceAndGuild(interaction)
+		if (!validation.ok) {
 			return interaction.reply({
-				content: errorMsg,
+				content: validation.errorMsg,
 				flags: [MessageFlags.Ephemeral],
 			})
 		}
+		const { guildId, voiceId } = validation
 
 		consola.log(`[pause] User ${interaction.user.username} requested pause in guild ${interaction.guildId}.`)
 		await interaction.deferReply()

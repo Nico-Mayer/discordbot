@@ -31,27 +31,31 @@ export function formatDuration(ms: number): string {
 	return `\`${time}\``
 }
 
-export function userInVoiceAndGuild(interaction: ChatInputCommandInteraction) {
-	type resp = {
-		ok: boolean
-		errorMsg: string
-		guildId: string
-		voiceId: string
-	}
-	let result: resp
+type VoiceValidationSuccess = {
+	ok: true
+	guildId: string
+	voiceId: string
+}
+
+type VoiceValidationError = {
+	ok: false
+	errorMsg: string
+}
+
+export type VoiceValidationResult = VoiceValidationSuccess | VoiceValidationError
+
+export function userInVoiceAndGuild(interaction: ChatInputCommandInteraction): VoiceValidationResult {
 	if (!interaction.guildId || interaction.guildId !== config.SERVER_ID) {
 		consola.warn(`[${interaction.commandName}] No guildId in interaction or not in the same guild.`)
-		result = { ok: false, errorMsg: "Du bist nicht auf dem Richtigen server!", guildId: "", voiceId: "" }
-		return result
+		return { ok: false, errorMsg: "Du bist nicht auf dem Richtigen server!" }
 	}
 
 	const sender = interaction.member as GuildMember
 	const voiceChannelId = sender.voice.channelId
 	if (!voiceChannelId) {
 		consola.log(`[${interaction.commandName}] User ${interaction.user.username} not in a voice channel.`)
-		result = { ok: false, errorMsg: "Du musst in einem Voice Channel sein!", guildId: "", voiceId: "" }
-		return result
+		return { ok: false, errorMsg: "Du musst in einem Voice Channel sein!" }
 	}
-	result = { ok: true, errorMsg: "", guildId: interaction.guildId, voiceId: voiceChannelId }
-	return result
+
+	return { ok: true, guildId: interaction.guildId, voiceId: voiceChannelId }
 }

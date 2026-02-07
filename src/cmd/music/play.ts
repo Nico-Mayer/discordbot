@@ -14,14 +14,15 @@ const meta = new SlashCommandBuilder()
 export const playCmd: Command = {
 	metadata: meta as SlashCommandBuilder,
 	handler: async (interaction) => {
-		const { ok, errorMsg, guildId, voiceId } = userInVoiceAndGuild(interaction)
-		if (!ok) {
+		const validation = userInVoiceAndGuild(interaction)
+		if (!validation.ok) {
 			return interaction.reply({
-				content: errorMsg,
+				content: validation.errorMsg,
 				flags: [MessageFlags.Ephemeral],
 			})
 		}
 
+		const { guildId, voiceId } = validation
 		consola.log(`[play] User ${interaction.user.username} requested play in guild ${interaction.guildId}.`)
 		await interaction.deferReply()
 		const lavalink = interaction.client.lavalink
