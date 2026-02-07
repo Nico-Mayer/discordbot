@@ -31,20 +31,9 @@ export function formatDuration(ms: number): string {
 	return `\`${time}\``
 }
 
-type VoiceValidationSuccess = {
-	ok: true
-	guildId: string
-	voiceId: string
-}
-
-type VoiceValidationError = {
-	ok: false
-	errorMsg: string
-}
-
-export type VoiceValidationResult = VoiceValidationSuccess | VoiceValidationError
-
-export function userInVoiceAndGuild(interaction: ChatInputCommandInteraction): VoiceValidationResult {
+export function userInVoiceAndGuild(
+	interaction: ChatInputCommandInteraction,
+): { ok: true; guildId: string; voiceId: string } | { ok: false; errorMsg: string } {
 	if (!interaction.guildId || interaction.guildId !== config.SERVER_ID) {
 		consola.warn(`[${interaction.commandName}] No guildId in interaction or not in the same guild.`)
 		return { ok: false, errorMsg: "Du bist nicht auf dem Richtigen server!" }
