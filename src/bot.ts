@@ -38,6 +38,9 @@ client.on("interactionCreate", async (interaction) => {
 client.lavalink.nodeManager.on("connect", (node) => {
 	consola.success(`Lavalink Node "${node.id}" connected!`)
 })
+client.lavalink.on("queueEnd", (player) => {
+	player.disconnect()
+})
 
 // Bot start
 client.login(config.TOKEN)
