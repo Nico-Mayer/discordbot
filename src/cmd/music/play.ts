@@ -11,7 +11,7 @@ const meta = new SlashCommandBuilder()
 		option.setName("query").setDescription("Song URL oder Suchbegriff").setRequired(true),
 	)
 
-export const playCmd: Command = {
+const playCmd: Command = {
 	metadata: meta as SlashCommandBuilder,
 	handler: async (interaction) => {
 		const validation = userInVoiceAndGuild(interaction)
@@ -101,3 +101,5 @@ function queueReply(track: Track, interaction: ChatInputCommandInteraction, play
 			iconURL: interaction.user.displayAvatarURL(),
 		})
 }
+
+export default playCmd

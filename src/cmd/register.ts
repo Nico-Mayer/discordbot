@@ -1,19 +1,21 @@
 import config from "@config/env"
 import consola from "consola"
 import { REST, Routes } from "discord.js"
-import { commands } from "./command"
+import { allCommands, commandCollections } from "./command"
 
 const rest = new REST().setToken(config.TOKEN)
-
 export async function registerCommands() {
-	consola.info(`Registering ${commands.size} command(s)`)
-
-	commands.forEach((cmd) => {
-		consola.log(`   - ${cmd.metadata.name}`)
+	commandCollections.forEach((collection) => {
+		consola.info(`Registering Collection "${collection.name}" commands:`)
+		collection.commands.forEach((command) => {
+			consola.log(`   - ${command.metadata.name}`)
+		})
 	})
 
+	consola.start(`Registering ${allCommands.size} command(s)`)
+
 	await rest.put(Routes.applicationCommands(config.APP_ID), {
-		body: Array.from(commands.values()).map((cmd) => cmd.metadata.toJSON()),
+		body: Array.from(allCommands.values()).map((cmd) => cmd.metadata.toJSON()),
 	})
 
 	consola.success("Commands registriert!")

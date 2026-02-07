@@ -5,7 +5,7 @@ import consola from "consola"
 import { Client, Events, GatewayIntentBits } from "discord.js"
 import type { LavalinkManager } from "lavalink-client"
 import p from "../package.json"
-import { commands } from "./cmd/command"
+import { allCommands } from "./cmd/command"
 import { registerCommands, resetCommands } from "./cmd/register"
 
 const { values: flags } = parseArgs({
@@ -57,7 +57,7 @@ client.once(Events.ClientReady, (c) => {
 })
 client.on("interactionCreate", async (interaction) => {
 	if (!interaction.isChatInputCommand()) return
-	commands.get(interaction.commandName)?.handler(interaction)
+	allCommands.get(interaction.commandName)?.handler(interaction)
 })
 
 client.lavalink.nodeManager.on("connect", (node) => {

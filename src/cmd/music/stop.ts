@@ -7,7 +7,7 @@ const meta = new SlashCommandBuilder()
 	.setName("stop")
 	.setDescription("Stopt die Wiedergabe und Leert die Warteschlange")
 
-export const stopCmd: Command = {
+const stopCmd: Command = {
 	metadata: meta,
 	handler: async (interaction) => {
 		const validation = userInVoiceAndGuild(interaction)
@@ -54,3 +54,5 @@ export const stopCmd: Command = {
 		return interaction.editReply({ embeds: [embed] })
 	},
 }
+
+export default stopCmd

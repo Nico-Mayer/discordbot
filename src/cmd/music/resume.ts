@@ -5,7 +5,7 @@ import { EmbedBuilder, MessageFlags, SlashCommandBuilder } from "discord.js"
 
 const meta = new SlashCommandBuilder().setName("resume").setDescription("Wiedergabe fortsetzen")
 
-export const resumeCmd: Command = {
+const resumeCmd: Command = {
 	metadata: meta,
 	handler: async (interaction) => {
 		const validation = userInVoiceAndGuild(interaction)
@@ -60,3 +60,4 @@ export const resumeCmd: Command = {
 		return interaction.editReply({ embeds: [embed] })
 	},
 }
+export default resumeCmd

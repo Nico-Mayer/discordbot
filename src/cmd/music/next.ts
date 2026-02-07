@@ -8,7 +8,7 @@ const meta = new SlashCommandBuilder()
 	.setName("next")
 	.setDescription("Springt zum nächsten Song in der Warteschlange")
 
-export const nextCmd: Command = {
+const nextCmd: Command = {
 	metadata: meta,
 	handler: async (interaction) => {
 		const validation = userInVoiceAndGuild(interaction)
@@ -80,3 +80,5 @@ export const nextCmd: Command = {
 		return interaction.editReply({ embeds: [embed] })
 	},
 }
+
+export default nextCmd

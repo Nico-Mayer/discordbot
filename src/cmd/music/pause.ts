@@ -5,7 +5,7 @@ import { EmbedBuilder, MessageFlags, SlashCommandBuilder } from "discord.js"
 
 const meta = new SlashCommandBuilder().setName("pause").setDescription("Pausiert die Wiedergabe")
 
-export const pauseCmd: Command = {
+const pauseCmd: Command = {
 	metadata: meta,
 	handler: async (interaction) => {
 		const validation = userInVoiceAndGuild(interaction)
@@ -51,3 +51,5 @@ export const pauseCmd: Command = {
 		return interaction.editReply({ embeds: [embed] })
 	},
 }
+
+export default pauseCmd
