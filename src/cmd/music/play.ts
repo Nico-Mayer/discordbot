@@ -1,12 +1,7 @@
-import { formatDuration, getYtThumbnailUrl } from "@lib/utils"
+import { formatDuration, getYtThumbnailUrl, userInVoiceAndGuild } from "@lib/utils"
 import type { Command } from "@types"
-import {
-	type ChatInputCommandInteraction,
-	EmbedBuilder,
-	type GuildMember,
-	MessageFlags,
-	SlashCommandBuilder,
-} from "discord.js"
+import consola from "consola"
+import { type ChatInputCommandInteraction, EmbedBuilder, MessageFlags, SlashCommandBuilder } from "discord.js"
 import type { Player, Track } from "lavalink-client"
 
 const meta = new SlashCommandBuilder()
@@ -16,44 +11,50 @@ const meta = new SlashCommandBuilder()
 		option.setName("query").setDescription("Song URL oder Suchbegriff").setRequired(true),
 	)
 
-export const play: Command = {
+export const playCmd: Command = {
 	metadata: meta as SlashCommandBuilder,
 	handler: async (interaction) => {
-		if (!interaction.guildId) return
-
-		const sender = interaction.member as GuildMember
-		const voiceChannelId = sender?.voice.channelId
-		if (!voiceChannelId) {
+		const { ok, errorMsg, guildId, voiceId } = userInVoiceAndGuild(interaction)
+		if (!ok) {
 			return interaction.reply({
-				content: "Du musst in einem Voice Channel sein!",
+				content: errorMsg,
 				flags: [MessageFlags.Ephemeral],
 			})
 		}
+
+		consola.log(`[play] User ${interaction.user.username} requested play in guild ${interaction.guildId}.`)
 		await interaction.deferReply()
 		const lavalink = interaction.client.lavalink
 		const player =
-			lavalink.getPlayer(interaction.guildId) ||
+			lavalink.getPlayer(guildId) ||
 			lavalink.createPlayer({
-				guildId: interaction.guildId,
-				voiceChannelId: voiceChannelId,
+				guildId: guildId,
+				voiceChannelId: voiceId,
 				textChannelId: interaction.channelId,
 				selfDeaf: true,
 				selfMute: false,
 				volume: 100,
 			})
 
-		if (!player.connected) await player.connect()
+		if (!player.connected) {
+			consola.log(`[play] Connecting player to guild ${interaction.guildId}.`)
+			await player.connect()
+		}
 
 		const query = interaction.options.getString("query", true)
+		consola.log(`[play] Searching for query: ${query}`)
 		const result = await player.search({ query }, interaction.user)
 
 		if (!result.tracks.length || !result.tracks || !result.tracks[0]) {
+			consola.log(`[play] No tracks found for query: ${query}`)
 			return interaction.editReply({ content: "keine tracks gefunden!" })
 		}
 
 		await player.queue.add(result.loadType === "playlist" ? result.tracks : result.tracks[0])
+		consola.log(`[play] Added ${result.tracks.length} track(s) to queue for guild ${interaction.guildId}.`)
 
 		if (player.playing) {
+			consola.log(`[play] Player already playing in guild ${interaction.guildId}.`)
 			return interaction.editReply({
 				embeds: [queueReply(result.tracks[0] as Track, interaction, player)],
 			})
@@ -61,6 +62,7 @@ export const play: Command = {
 
 		await player.play()
 		const track = result.tracks[0]
+		consola.log(`[play] Started playing: ${track.info.title} in guild ${interaction.guildId}.`)
 
 		// TODO: evtl auch playlist stuff bei need implementieren
 		await interaction.editReply({
