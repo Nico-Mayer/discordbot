@@ -6,18 +6,20 @@ import { commands } from "./command"
 const rest = new REST().setToken(config.TOKEN)
 
 export async function registerCommands() {
-	// await resetCommands()
+	consola.info(`Registering ${commands.size} command(s)`)
 
-	for (const cmd of Array.from(commands.values())) {
-		await rest.put(Routes.applicationCommands(config.APP_ID), {
-			body: [cmd.metadata.toJSON()],
-		})
-	}
+	commands.forEach((cmd) => {
+		console.log(`   - ${cmd.metadata.name}`)
+	})
+
+	await rest.put(Routes.applicationCommands(config.APP_ID), {
+		body: Array.from(commands.values()).map((cmd) => cmd.metadata.toJSON()),
+	})
 
 	consola.success("Commands registriert!")
 }
 
-async function _resetCommands() {
+export async function resetCommands() {
 	rest
 		.put(Routes.applicationGuildCommands(config.APP_ID, config.SERVER_ID), {
 			body: [],

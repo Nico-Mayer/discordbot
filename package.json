@@ -4,7 +4,7 @@
 	"type": "module",
 	"private": true,
 	"scripts": {
-		"dev": "bun src/bot.ts --watch",
+		"dev": "bun --watch src/bot.ts",
 		"format": "biome format --write",
 		"lint": "biome lint --write",
 		"check": "biome check --write",

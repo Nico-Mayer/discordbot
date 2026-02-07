@@ -38,5 +38,9 @@ export const pauseCmd: Command = {
 		}
 		consola.log(`[pause] pausing playback`)
 		await player.pause()
+
+		return interaction.editReply({
+			content: "Wiedergabe pausiert.",
+		})
 	},
 }

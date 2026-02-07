@@ -1,3 +1,4 @@
+import { parseArgs } from "node:util"
 import config from "@config/env"
 import { generateLavalinkClient } from "@config/lavalink"
 import consola from "consola"
@@ -5,7 +6,26 @@ import { Client, Events, GatewayIntentBits } from "discord.js"
 import type { LavalinkManager } from "lavalink-client"
 import p from "../package.json"
 import { commands } from "./cmd/command"
-import { registerCommands } from "./cmd/register"
+import { registerCommands, resetCommands } from "./cmd/register"
+
+const { values: flags } = parseArgs({
+	args: Bun.argv,
+	options: {
+		debug: {
+			type: "boolean",
+			short: "d",
+		},
+		register: {
+			type: "boolean",
+			short: "r",
+		},
+		"reset-commands": {
+			type: "boolean",
+		},
+	},
+	strict: false,
+	allowPositionals: true,
+})
 
 const discordjsVersion = p.dependencies["discord.js"]
 consola.info("Running DiscordJs Version:", discordjsVersion)
@@ -22,7 +42,12 @@ const client = new Client({
 })
 client.lavalink = generateLavalinkClient(client)
 
-await registerCommands()
+if (flags["reset-commands"]) {
+	await resetCommands()
+}
+if (flags.register || flags["reset-commands"]) {
+	await registerCommands()
+}
 
 // Events
 client.on(Events.Raw, (d) => client.lavalink.sendRawData(d))
@@ -39,6 +64,7 @@ client.lavalink.nodeManager.on("connect", (node) => {
 	consola.success(`Lavalink Node "${node.id}" connected!`)
 })
 client.lavalink.on("queueEnd", (player) => {
+	consola.log("Playback ended, disconnecting player.")
 	player.disconnect()
 })
 
