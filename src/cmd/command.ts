@@ -1,4 +1,5 @@
 import type { Command } from "@types"
+import { nextCmd } from "./music/next"
 import { pauseCmd } from "./music/pause"
 import { playCmd } from "./music/play"
 import { resumeCmd } from "./music/resume"
@@ -11,3 +12,4 @@ commands.set(playCmd.metadata.name, playCmd)
 commands.set(pauseCmd.metadata.name, pauseCmd)
 commands.set(resumeCmd.metadata.name, resumeCmd)
 commands.set(stopCmd.metadata.name, stopCmd)
+commands.set(nextCmd.metadata.name, nextCmd)
