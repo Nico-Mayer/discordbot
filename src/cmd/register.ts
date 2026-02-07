@@ -9,7 +9,7 @@ export async function registerCommands() {
 	consola.info(`Registering ${commands.size} command(s)`)
 
 	commands.forEach((cmd) => {
-		console.log(`   - ${cmd.metadata.name}`)
+		consola.log(`   - ${cmd.metadata.name}`)
 	})
 
 	await rest.put(Routes.applicationCommands(config.APP_ID), {
@@ -20,13 +20,13 @@ export async function registerCommands() {
 }
 
 export async function resetCommands() {
-	rest
+	await rest
 		.put(Routes.applicationGuildCommands(config.APP_ID, config.SERVER_ID), {
 			body: [],
 		})
 		.then(() => consola.info("Successfully deleted all guild commands."))
 		.catch(consola.error)
-	rest
+	await rest
 		.put(Routes.applicationCommands(config.APP_ID), { body: [] })
 		.then(() => consola.info("Successfully deleted all application commands."))
 		.catch(consola.error)

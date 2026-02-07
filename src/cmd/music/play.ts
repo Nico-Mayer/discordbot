@@ -100,5 +100,4 @@ function queueReply(track: Track, interaction: ChatInputCommandInteraction, play
 			text: `Angefordert von ${interaction.user.username}`,
 			iconURL: interaction.user.displayAvatarURL(),
 		})
-		.setTimestamp()
 }

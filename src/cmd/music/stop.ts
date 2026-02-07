@@ -3,9 +3,11 @@ import type { Command } from "@types"
 import consola from "consola"
 import { EmbedBuilder, MessageFlags, SlashCommandBuilder } from "discord.js"
 
-const meta = new SlashCommandBuilder().setName("pause").setDescription("Pausiert die Wiedergabe")
+const meta = new SlashCommandBuilder()
+	.setName("stop")
+	.setDescription("Stopt die Wiedergabe und Leert die Warteschlange")
 
-export const pauseCmd: Command = {
+export const stopCmd: Command = {
 	metadata: meta,
 	handler: async (interaction) => {
 		const validation = userInVoiceAndGuild(interaction)
@@ -15,34 +17,35 @@ export const pauseCmd: Command = {
 				flags: [MessageFlags.Ephemeral],
 			})
 		}
-		const { guildId, voiceId } = validation
 
-		consola.log(`[pause] User ${interaction.user.username} requested pause in guild ${interaction.guildId}.`)
+		const { guildId, voiceId } = validation
+		consola.log(`[stop] User ${interaction.user.username} requested stop in guild ${interaction.guildId}.`)
 		await interaction.deferReply()
 
 		const lavalink = interaction.client.lavalink
 		const player = lavalink.getPlayer(guildId)
-		if (!player || !player.playing) {
-			consola.log(`[pause] No active player or nothing playing in guild ${interaction.guildId}.`)
+
+		if (!player) {
+			consola.log(`[stop] No player found in guild ${interaction.guildId}.`)
 			return interaction.editReply({
-				content: "Aktuell wird nichts abgespielt.",
+				content: "Aktuell gibt es keinen Musikplayer.",
 			})
 		}
 		if (player.voiceChannelId !== voiceId) {
 			consola.log(
-				`[pause] User ${interaction.user.username} requested pause outside of the bot's voice channel in guild ${interaction.guildId}.`,
+				`[stop] User ${interaction.user.username} requested stop outside of the bot's voice channel in guild ${interaction.guildId}.`,
 			)
 			return interaction.editReply({
 				content: "Du bist nicht im selben Voicechannel wie ich du clown.",
 			})
 		}
-		await player.pause()
-		consola.log(`[pause] Paused playback in guild ${interaction.guildId}.`)
+		await player.stopPlaying()
+		consola.log(`[stop] Stopped playback and cleared queue in guild ${interaction.guildId}.`)
 
 		const embed = new EmbedBuilder()
-			.setColor(0xfee75c)
-			.setAuthor({ name: "⏸️ Wiedergabe pausiert", iconURL: interaction.client.user.displayAvatarURL() })
-			.setDescription(`Die Wiedergabe wurde pausiert.`)
+			.setColor(0xed4245)
+			.setAuthor({ name: "⏹️ Wiedergabe gestoppt", iconURL: interaction.client.user.displayAvatarURL() })
+			.setDescription(`Die Wiedergabe wurde gestoppt und die Warteschlange wurde geleert.`)
 			.setFooter({
 				text: `Angefordert von ${interaction.user.username}`,
 				iconURL: interaction.user.displayAvatarURL(),
