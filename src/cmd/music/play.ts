@@ -50,24 +50,24 @@ const playCmd: Command = {
 			consola.log(`[play] No tracks found for query: ${query}`)
 			return interaction.editReply({ content: "keine tracks gefunden!" })
 		}
+		const trackToPlay = result.tracks[0]
 
-		await player.queue.add(result.loadType === "playlist" ? result.tracks : result.tracks[0])
-		consola.log(`[play] Added ${result.tracks.length} track(s) to queue for guild ${interaction.guildId}.`)
+		await player.queue.add(trackToPlay)
+		consola.log(`[play] Added track ${trackToPlay.info.title} to queue for guild ${interaction.guildId}.`)
 
 		if (player.playing) {
 			consola.log(`[play] Player already playing in guild ${interaction.guildId}.`)
 			return interaction.editReply({
-				embeds: [queueReply(result.tracks[0] as Track, interaction, player)],
+				embeds: [queueReply(trackToPlay as Track, interaction, player)],
 			})
 		}
 
 		await player.play()
-		const track = result.tracks[0]
-		consola.log(`[play] Started playing: ${track.info.title} in guild ${interaction.guildId}.`)
+		consola.log(`[play] Started playing: ${trackToPlay.info.title} in guild ${interaction.guildId}.`)
 
 		// TODO: evtl auch playlist stuff bei need implementieren
 		await interaction.editReply({
-			embeds: [singleSongReply(track as Track, interaction)],
+			embeds: [singleSongReply(trackToPlay as Track, interaction)],
 		})
 	},
 }
