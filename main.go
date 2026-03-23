@@ -76,8 +76,8 @@ func main() {
 
 	node, err := b.Lavalink.AddNode(ctx, disgolink.NodeConfig{
 		Name:     cfg.NodeName,
-		Address:  cfg.NodeAddress,
-		Password: cfg.NodePassword,
+		Address:  cfg.LavalinkAddress,
+		Password: cfg.LavalinkPassword,
 		Secure:   cfg.NodeSecure,
 	})
 	if err != nil {

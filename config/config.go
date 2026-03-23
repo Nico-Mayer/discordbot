@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 	"sync"
@@ -19,10 +20,13 @@ type Config struct {
 	Token   string
 	GuildID snowflake.ID
 
-	NodeName     string
-	NodeAddress  string
-	NodePassword string
-	NodeSecure   bool
+	NodeName   string
+	NodeSecure bool
+
+	LavalinkHost     string
+	LavalinkPort     int
+	LavalinkPassword string
+	LavalinkAddress  string
 }
 
 func Load() Config {
@@ -32,12 +36,14 @@ func Load() Config {
 		}
 
 		instance = Config{
-			Token:        requireEnv("TOKEN"),
-			GuildID:      snowflake.GetEnv("GUILD_ID"),
-			NodeName:     requireEnv("NODE_NAME"),
-			NodeAddress:  requireEnv("NODE_ADDRESS"),
-			NodePassword: requireEnv("NODE_PASSWORD"),
-			NodeSecure:   envBool("NODE_SECURE"),
+			Token:            requireEnv("TOKEN"),
+			GuildID:          snowflake.GetEnv("GUILD_ID"),
+			NodeName:         requireEnv("NODE_NAME"),
+			NodeSecure:       envBool("NODE_SECURE"),
+			LavalinkHost:     requireEnv("LAVALINK_HOST"),
+			LavalinkPort:     envInt("LAVALINK_PORT"),
+			LavalinkPassword: requireEnv("LAVALINK_PASSWORD"),
+			LavalinkAddress:  fmt.Sprintf("%s:%d", requireEnv("LAVALINK_HOST"), envInt("LAVALINK_PORT")),
 		}
 	})
 	return instance
@@ -53,5 +59,10 @@ func requireEnv(key string) string {
 
 func envBool(key string) bool {
 	v, _ := strconv.ParseBool(os.Getenv(key))
+	return v
+}
+
+func envInt(key string) int {
+	v, _ := strconv.Atoi(os.Getenv(key))
 	return v
 }
