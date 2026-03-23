@@ -1,11 +1,11 @@
 package config
 
 import (
-	"log/slog"
 	"os"
 	"strconv"
 	"sync"
 
+	"github.com/charmbracelet/log"
 	"github.com/disgoorg/snowflake/v2"
 	"github.com/joho/godotenv"
 )
@@ -28,7 +28,7 @@ type Config struct {
 func Load() Config {
 	once.Do(func() {
 		if err := godotenv.Load(); err != nil {
-			slog.Debug("no .env file found, using environment variables")
+			log.Debug("No .env file found, using environment variables")
 		}
 
 		instance = Config{
@@ -46,7 +46,7 @@ func Load() Config {
 func requireEnv(key string) string {
 	val := os.Getenv(key)
 	if val == "" {
-		slog.Warn("missing environment variable", slog.String("key", key))
+		log.Warn("Missing environment variable", "key", key)
 	}
 	return val
 }
