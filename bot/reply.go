@@ -52,11 +52,11 @@ func (b *Bot) deferredTrackReply(event *events.ApplicationCommandInteractionCrea
 		Fields: []discord.EmbedField{
 			{
 				Name:   "⏱️ Dauer",
-				Inline: boolPtr(true),
+				Inline: new(true),
 			},
 			{
 				Name:   fmt.Sprintf("%s min", formatPosition(track.Info.Length)),
-				Inline: boolPtr(true),
+				Inline: new(true),
 			},
 		},
 	}
@@ -79,8 +79,8 @@ func (b *Bot) deferredQueuedReply(event *events.ApplicationCommandInteractionCre
 		Description: fmt.Sprintf("[%s](<%s>)\nvon **%s**", track.Info.Title, *track.Info.URI, track.Info.Author),
 		Color:       0x5865F2,
 		Fields: []discord.EmbedField{
-			{Name: "Position", Value: fmt.Sprintf("#%d", position), Inline: boolPtr(true)},
-			{Name: "Dauer", Value: formatPosition(track.Info.Length), Inline: boolPtr(true)},
+			{Name: "Position", Value: fmt.Sprintf("#%d", position), Inline: new(true)},
+			{Name: "Dauer", Value: formatPosition(track.Info.Length), Inline: new(true)},
 		},
 	}
 	embed.Thumbnail = &discord.EmbedResource{URL: getArtworkURL(track)}
@@ -89,8 +89,6 @@ func (b *Bot) deferredQueuedReply(event *events.ApplicationCommandInteractionCre
 		Embeds: &embeds,
 	})
 }
-
-func boolPtr(v bool) *bool { return &v }
 
 func getArtworkURL(track *lavalink.Track) string {
 	if track.Info.ArtworkURL != nil {
