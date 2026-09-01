@@ -20,7 +20,7 @@ func (b *Bot) play(event *events.ApplicationCommandInteractionCreate, data disco
 	if source, ok := data.OptString("source"); ok {
 		identifier = lavalink.SearchType(source).Apply(identifier)
 	} else if !urlPattern.MatchString(identifier) {
-		identifier = lavalink.SearchTypeYouTube.Apply(identifier)
+		identifier = lavalink.SearchTypeYouTubeMusic.Apply(identifier)
 	}
 
 	voiceState, ok := b.Client.Caches.VoiceState(*event.GuildID(), event.User().ID)
