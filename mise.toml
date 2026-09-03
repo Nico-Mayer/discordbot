@@ -1,3 +1,43 @@
 [tools]
 go = "1.27.1"
 "npm:@fission-ai/openspec" = "1.11.0"
+
+[tasks.build]
+description = "Compile every package"
+run = "go build ./..."
+
+[tasks.fmt]
+description = "Fail if any file is not gofmt'd"
+run = '''
+unformatted=$(gofmt -l .)
+if [ -n "$unformatted" ]; then
+  echo "not gofmt'd:"
+  echo "$unformatted"
+  exit 1
+fi
+'''
+
+[tasks.vet]
+description = "Run go vet"
+run = "go vet ./..."
+
+[tasks.test]
+description = "Run tests with the race detector"
+run = "go test -race ./..."
+
+[tasks.coverage]
+description = "Report total statement coverage (no threshold gate)"
+run = '''
+go test -coverprofile=coverage.out ./...
+go tool cover -func=coverage.out | tail -n 1
+'''
+
+[tasks.check]
+description = "Build, format, vet, test and report coverage"
+run = [
+  "mise run build",
+  "mise run fmt",
+  "mise run vet",
+  "mise run test",
+  "mise run coverage",
+]
