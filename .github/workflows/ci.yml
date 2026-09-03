@@ -1,0 +1,22 @@
+name: CI
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
+    workflow_call:
+
+jobs:
+    check:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Set up mise
+              uses: jdx/mise-action@v2
+              with:
+                  install_args: go
+
+            - name: Build, format, vet, test, coverage
+              run: mise run check

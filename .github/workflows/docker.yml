@@ -12,7 +12,11 @@ env:
     IMAGE_NAME: ${{ github.repository }}
 
 jobs:
+    check:
+        uses: ./.github/workflows/ci.yml
+
     build:
+        needs: check
         runs-on: ubuntu-latest
         permissions:
             contents: read
