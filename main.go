@@ -8,7 +8,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/charmbracelet/log"
+	"charm.land/log/v2"
 	"github.com/disgoorg/disgo"
 	disgobot "github.com/disgoorg/disgo/bot"
 	"github.com/disgoorg/disgo/cache"

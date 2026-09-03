@@ -3,7 +3,7 @@ package bot
 import (
 	"context"
 
-	"github.com/charmbracelet/log"
+	"charm.land/log/v2"
 	"github.com/disgoorg/disgo/events"
 	"github.com/disgoorg/disgolink/v3/disgolink"
 	"github.com/disgoorg/disgolink/v3/lavalink"

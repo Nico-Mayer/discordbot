@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/charmbracelet/log"
+	"charm.land/log/v2"
 	"github.com/disgoorg/snowflake/v2"
 	"github.com/joho/godotenv"
 )

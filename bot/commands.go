@@ -1,7 +1,7 @@
 package bot
 
 import (
-	"github.com/charmbracelet/log"
+	"charm.land/log/v2"
 	"github.com/disgoorg/disgo/bot"
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/handler"
