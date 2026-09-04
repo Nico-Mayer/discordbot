@@ -85,11 +85,16 @@ func TestReleaseAllRunsCleanupsInOrder(t *testing.T) {
 	step := func(name string) cleanup {
 		return cleanup{name: name, run: func(context.Context) { order = append(order, name) }}
 	}
-	cleanups := []cleanup{step("leave voice channel"), step("close lavalink"), step("close gateway")}
+	cleanups := []cleanup{
+		step("stop idle countdowns"),
+		step("leave voice channel"),
+		step("close lavalink"),
+		step("close gateway"),
+	}
 
 	releaseAll(context.Background(), cleanups, time.Second, logger)
 
-	require.Equal(t, []string{"leave voice channel", "close lavalink", "close gateway"}, order)
+	require.Equal(t, []string{"stop idle countdowns", "leave voice channel", "close lavalink", "close gateway"}, order)
 }
 
 func TestReleaseAllLeavesNoGoroutinesBehind(t *testing.T) {

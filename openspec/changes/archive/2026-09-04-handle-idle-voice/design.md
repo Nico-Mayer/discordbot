@@ -117,9 +117,13 @@ This is the subtlety most likely to be got wrong: widening that filter without k
 
 ### Shutdown stops both timers
 
-`time.AfterFunc` holds a goroutine until it fires. Either pending timer at shutdown means a goroutine outliving the process, or a callback running against a closed client.
+A timer left pending at shutdown fires afterwards, and its callback then acts on a client that is already closing.
 
-The service exposes `Close()` which cancels both timers, and the composition root registers it as a cleanup alongside the gateway and Lavalink teardown. The `goleak` check from `refactor-bot-architecture` is what verifies this, and it will fail loudly if the cleanup is forgotten. That is the intended relationship: the earlier change built the detector, this change is the first thing it usefully detects.
+An earlier draft of this section claimed `time.AfterFunc` holds a goroutine until it fires, and concluded that the `goleak` check from `refactor-bot-architecture` would catch a forgotten cleanup. That is wrong, and was checked against Go 1.27.1 and `goleak` v1.3.0 rather than argued: a *pending* `AfterFunc` timer is a runtime timer, not a goroutine, and `goleak` reports nothing. Only a callback that is already *running* shows up as a goroutine. So `goleak` is not the detector for this, and relying on it would have left the cleanup unguarded.
+
+The hazard is therefore the late callback, not a leaked goroutine. The service exposes `Close()`, which sets a `closed` flag and stops both timers under the same mutex the callback takes, and the composition root registers it as the first cleanup, ahead of leaving the voice channel. The flag is what makes it safe: a callback that had already started before `Close` took the lock finds `closed` set and returns without touching Lavalink or the gateway.
+
+That guard is verified directly in `internal/music`, by arming a countdown, calling `Close`, and asserting the leave never happens - a test that fails if either the flag or the timer stop is removed. `goleak` stays where `refactor-bot-architecture` put it and keeps covering what it can actually see.
 
 ## Risks / Trade-offs
 

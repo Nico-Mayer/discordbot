@@ -35,6 +35,6 @@ None.
 ## Impact
 
 - **Code**: the voice state event handler gains occupancy counting, the service gains two timers and their arm/cancel logic, the track-end handler stops leaving directly and defers to its timer, and shutdown must stop both.
-- **Depends on**: `refactor-bot-architecture`. The timer belongs on the service, which does not exist yet, and the `goleak` check that change introduces is what proves the timer does not outlive shutdown.
+- **Depends on**: `refactor-bot-architecture`. The timer belongs on the service, which does not exist yet, and the cleanup registration that change introduces is where stopping the timers hangs.
 - **Configuration**: two new optional variables, plus their entries in `.env.example` and the README. An existing deployment that sets neither gets the 60 second default for both, which is a behaviour change on upgrade for the queue-dry case.
 - **Dependencies**: none. `time.AfterFunc` and the existing voice state cache are sufficient. No new gateway intents and no new cache flags.

@@ -23,11 +23,27 @@ NODE_SECURE=false
 LAVALINK_HOST=localhost
 LAVALINK_PORT=2333
 LAVALINK_PASSWORD=youshallnotpass
+
+IDLE_ALONE_SECONDS=60
+IDLE_EMPTY_QUEUE_SECONDS=60
 ```
 
-Every variable except `NODE_SECURE` is required. `NODE_SECURE` defaults to `false`. The bot reports every configuration problem at once and exits with a non-zero status rather than starting in a broken state.
+`NODE_SECURE`, `IDLE_ALONE_SECONDS`, and `IDLE_EMPTY_QUEUE_SECONDS` are optional; every other variable is required. `NODE_SECURE` defaults to `false`. The bot reports every configuration problem at once and exits with a non-zero status rather than starting in a broken state.
 
 Values in the process environment take precedence over `.env`, and a missing `.env` file is not an error.
+
+### Leaving on its own
+
+The bot leaves the voice channel once it has been idle, for either of two independent reasons:
+
+| Variable | The bot leaves when |
+| --- | --- |
+| `IDLE_ALONE_SECONDS` | its voice channel has held nobody but itself for this long |
+| `IDLE_EMPTY_QUEUE_SECONDS` | nothing has been playing and the queue has been empty for this long |
+
+Each accepts a number of seconds, or `off` to never leave for that reason. Both default to `60`. `0` means leave as soon as the condition is true, so `IDLE_EMPTY_QUEUE_SECONDS=0` restores the earlier behaviour of leaving the moment the last track ends.
+
+Another bot sitting in the channel counts as someone listening, so `IDLE_ALONE_SECONDS` will not fire while one is there.
 
 ### Run
 

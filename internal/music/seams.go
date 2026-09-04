@@ -2,6 +2,7 @@ package music
 
 import (
 	"context"
+	"iter"
 
 	"github.com/disgoorg/disgolink/v3/lavalink"
 	"github.com/disgoorg/snowflake/v2"
@@ -35,4 +36,19 @@ type Node interface {
 // voice channels. A nil channelID leaves the current channel.
 type Voice interface {
 	UpdateVoiceState(ctx context.Context, guildID snowflake.ID, channelID *snowflake.ID, selfMute bool, selfDeaf bool) error
+}
+
+// VoiceStates is the slice of the Discord voice state cache the service uses to
+// tell whether anyone is still in its channel. It yields a plain value rather
+// than discord.VoiceState so this package stays free of the gateway types and a
+// fake stays trivial.
+type VoiceStates interface {
+	VoiceStates(guildID snowflake.ID) iter.Seq[VoiceState]
+}
+
+// VoiceState is one user's presence in a guild's voice channels. ChannelID is
+// nil when the user is not connected to one.
+type VoiceState struct {
+	UserID    snowflake.ID
+	ChannelID *snowflake.ID
 }

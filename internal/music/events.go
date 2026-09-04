@@ -67,14 +67,19 @@ func (e *Events) handleVoiceStateUpdate(guildID snowflake.ID, userID snowflake.I
 		e.logger.DebugContext(e.ctx, "ignoring voice state update from an unconfigured guild", slog.Any("guild", guildID))
 		return
 	}
-	if userID != e.selfID {
-		return
+
+	// Only the bot's own state belongs to Lavalink, but every user's movement
+	// changes whether anyone is still listening, so the rest falls through.
+	if userID == e.selfID {
+		e.voice.OnVoiceStateUpdate(e.ctx, guildID, channelID, sessionID)
+		if channelID == nil {
+			e.service.CancelIdle()
+			e.service.DiscardQueue()
+			return
+		}
 	}
 
-	e.voice.OnVoiceStateUpdate(e.ctx, guildID, channelID, sessionID)
-	if channelID == nil {
-		e.service.DiscardQueue()
-	}
+	e.service.EvaluateOccupancy(e.ctx)
 }
 
 func (e *Events) OnVoiceServerUpdate(event *events.VoiceServerUpdate) {
@@ -104,7 +109,17 @@ func (e *Events) OnPlayerResume(_ disgolink.Player, event lavalink.PlayerResumeE
 }
 
 func (e *Events) OnTrackStart(_ disgolink.Player, event lavalink.TrackStartEvent) {
-	e.logger.InfoContext(e.ctx, "track started", slog.String("title", event.Track.Info.Title))
+	e.handleTrackStart(event.GuildID(), event.Track.Info.Title)
+}
+
+func (e *Events) handleTrackStart(guildID snowflake.ID, title string) {
+	if guildID != e.service.GuildID() {
+		e.logger.DebugContext(e.ctx, "ignoring track start from an unconfigured guild", slog.Any("guild", guildID))
+		return
+	}
+
+	e.logger.InfoContext(e.ctx, "track started", slog.String("title", title))
+	e.service.CancelEmptyQueue()
 }
 
 func (e *Events) OnTrackEnd(player disgolink.Player, event lavalink.TrackEndEvent) {
@@ -130,9 +145,7 @@ func (e *Events) handleTrackEnd(player Player, guildID snowflake.ID, reason lava
 		return
 	}
 
-	if err := e.service.Leave(e.ctx); err != nil {
-		e.logger.ErrorContext(e.ctx, "could not leave the voice channel", slog.Any("err", err))
-	}
+	e.service.ArmEmptyQueue(e.ctx)
 }
 
 func (e *Events) OnTrackException(_ disgolink.Player, event lavalink.TrackExceptionEvent) {

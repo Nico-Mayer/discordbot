@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/disgoorg/disgolink/v3/lavalink"
 	"github.com/disgoorg/snowflake/v2"
@@ -89,7 +90,7 @@ func TestOnVoiceStateUpdateGuildGuard(t *testing.T) {
 	}
 }
 
-func TestOnVoiceStateUpdateIgnoresOtherMembers(t *testing.T) {
+func TestOnVoiceStateUpdateForwardsOnlyTheBotsOwnState(t *testing.T) {
 	t.Parallel()
 
 	channelID := snowflake.ID(444444444444444444)
@@ -113,6 +114,67 @@ func TestOnVoiceStateUpdateDiscardsTheQueueOnDisconnect(t *testing.T) {
 
 	require.Len(t, forwarder.recordedStateUpdates(), 1)
 	require.Zero(t, s.queue.Len(), "the queue is discarded when the bot leaves voice")
+}
+
+func TestOnVoiceStateUpdateArmsTheCountdownWhenTheLastUserLeaves(t *testing.T) {
+	t.Parallel()
+
+	f := newIdleFixture(t, enabled(time.Minute), enabled(time.Minute))
+	f.states.set(inChannel(selfID, testChannelID))
+	e := newTestEvents(t, f.service, &fakeForwarder{}, nil)
+
+	e.handleVoiceStateUpdate(testGuildID, otherUserID, nil, "session")
+
+	require.NotNil(t, f.service.aloneTimer)
+	f.requireStayed(t)
+}
+
+func TestOnVoiceStateUpdateCancelsTheCountdownWhenAUserRejoins(t *testing.T) {
+	t.Parallel()
+
+	f := newIdleFixture(t, enabled(time.Minute), enabled(time.Minute))
+	f.states.set(inChannel(selfID, testChannelID))
+	e := newTestEvents(t, f.service, &fakeForwarder{}, nil)
+
+	e.handleVoiceStateUpdate(testGuildID, otherUserID, nil, "session")
+	require.NotNil(t, f.service.aloneTimer)
+
+	f.states.set(inChannel(selfID, testChannelID), inChannel(otherUserID, testChannelID))
+	e.handleVoiceStateUpdate(testGuildID, otherUserID, ptr(testChannelID), "session")
+
+	require.Nil(t, f.service.aloneTimer)
+}
+
+func TestOnVoiceStateUpdateReevaluatesWhenTheBotChangesChannel(t *testing.T) {
+	t.Parallel()
+
+	otherChannelID := snowflake.ID(666666666666666666)
+	f := newIdleFixture(t, enabled(time.Minute), enabled(time.Minute))
+	f.states.set(inChannel(selfID, testChannelID), inChannel(otherUserID, testChannelID))
+	e := newTestEvents(t, f.service, &fakeForwarder{}, nil)
+
+	f.states.set(inChannel(selfID, otherChannelID), inChannel(otherUserID, testChannelID))
+	e.handleVoiceStateUpdate(testGuildID, selfID, ptr(otherChannelID), "session")
+
+	require.NotNil(t, f.service.aloneTimer, "the bot moved to a channel nobody is in")
+}
+
+func TestOnVoiceStateUpdateCancelsBothCountdownsOnDisconnect(t *testing.T) {
+	t.Parallel()
+
+	f := newIdleFixture(t, enabled(time.Minute), enabled(time.Minute))
+	f.states.set(inChannel(selfID, testChannelID))
+	e := newTestEvents(t, f.service, &fakeForwarder{}, nil)
+
+	f.service.EvaluateOccupancy(context.Background())
+	f.service.ArmEmptyQueue(context.Background())
+	require.NotNil(t, f.service.aloneTimer)
+	require.NotNil(t, f.service.emptyTimer)
+
+	e.handleVoiceStateUpdate(testGuildID, selfID, nil, "session")
+
+	require.Nil(t, f.service.aloneTimer)
+	require.Nil(t, f.service.emptyTimer)
 }
 
 func TestOnVoiceStateUpdateFromAForeignGuildLogsAtDebug(t *testing.T) {
@@ -196,7 +258,6 @@ func TestOnTrackEnd(t *testing.T) {
 		queued       []lavalink.Track
 		wantPlaying  string
 		wantQueueLen int
-		wantLeave    bool
 		wantUpdates  int
 	}{
 		{
@@ -231,13 +292,6 @@ func TestOnTrackEnd(t *testing.T) {
 			wantQueueLen: 1,
 			wantUpdates:  0,
 		},
-		{
-			name:        "exhausted queue leaves the voice channel",
-			reason:      lavalink.TrackEndReasonFinished,
-			wantPlaying: "encoded-current",
-			wantLeave:   true,
-			wantUpdates: 0,
-		},
 	}
 
 	for _, tt := range tests {
@@ -256,14 +310,52 @@ func TestOnTrackEnd(t *testing.T) {
 			require.Equal(t, tt.wantQueueLen, s.queue.Len())
 			require.Equal(t, tt.wantUpdates, player.updateCount())
 
-			if tt.wantLeave {
-				require.Len(t, voice.recorded(), 1)
-				require.Nil(t, voice.recorded()[0].channelID)
-			} else {
-				require.Empty(t, voice.recorded())
-			}
+			require.Empty(t, voice.recorded(), "the track end path must never leave inline")
 		})
 	}
+}
+
+func TestOnTrackEndExhaustedQueueStartsTheIdleCountdown(t *testing.T) {
+	t.Parallel()
+
+	// disgolink clears the player's track before it emits the event, so a handler
+	// always sees a player with nothing loaded.
+	player := &fakePlayer{}
+	voice := &fakeVoice{}
+	s := newTestService(t, &fakeLavalink{existingPlayer: player}, voice)
+	e := newTestEvents(t, s, &fakeForwarder{}, nil)
+
+	e.handleTrackEnd(player, testGuildID, lavalink.TrackEndReasonFinished)
+
+	require.NotNil(t, s.emptyTimer, "the queue-empty countdown must be running")
+	require.Empty(t, voice.recorded(), "the bot must stay in the channel until the countdown elapses")
+	require.Zero(t, player.updateCount())
+}
+
+func TestOnTrackStartCancelsTheIdleCountdown(t *testing.T) {
+	t.Parallel()
+
+	s := newTestService(t, nil, nil)
+	e := newTestEvents(t, s, &fakeForwarder{}, nil)
+
+	s.ArmEmptyQueue(context.Background())
+	require.NotNil(t, s.emptyTimer)
+
+	e.handleTrackStart(testGuildID, "a track")
+
+	require.Nil(t, s.emptyTimer)
+}
+
+func TestOnTrackStartFromAnotherGuildIsIgnored(t *testing.T) {
+	t.Parallel()
+
+	s := newTestService(t, nil, nil)
+	e := newTestEvents(t, s, &fakeForwarder{}, nil)
+
+	s.ArmEmptyQueue(context.Background())
+	e.handleTrackStart(foreignGuildID, "a track")
+
+	require.NotNil(t, s.emptyTimer)
 }
 
 func TestOnTrackEndReasonsThatForbidAdvancing(t *testing.T) {

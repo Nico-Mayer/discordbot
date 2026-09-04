@@ -25,7 +25,16 @@ func newTestService(t *testing.T, lava *fakeLavalink, voice *fakeVoice) *Service
 	if voice == nil {
 		voice = &fakeVoice{}
 	}
-	return NewService(testGuildID, lava, voice, discardLogger())
+	return NewService(ServiceConfig{
+		GuildID:        testGuildID,
+		ApplicationID:  selfID,
+		Lavalink:       lava,
+		Voice:          voice,
+		VoiceStates:    &fakeVoiceStates{},
+		Logger:         discardLogger(),
+		IdleAlone:      enabled(time.Minute),
+		IdleEmptyQueue: enabled(time.Minute),
+	})
 }
 
 func TestNewServiceSmoke(t *testing.T) {

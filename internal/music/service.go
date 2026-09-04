@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"sync"
 	"time"
 
 	"github.com/disgoorg/disgolink/v3/lavalink"
@@ -26,23 +27,60 @@ var ErrNoNode = errors.New("no lavalink node available")
 // and reaches Lavalink and the gateway only through the seams above, so every
 // method is unit-testable.
 type Service struct {
-	guildID     snowflake.ID
-	lavalink    Lavalink
-	voice       Voice
-	queue       *queue.Queue
-	logger      *slog.Logger
-	loadTimeout time.Duration
+	guildID       snowflake.ID
+	applicationID snowflake.ID
+	lavalink      Lavalink
+	voice         Voice
+	voiceStates   VoiceStates
+	queue         *queue.Queue
+	logger        *slog.Logger
+	loadTimeout   time.Duration
+
+	idleAlone      IdleTimeout
+	idleEmptyQueue IdleTimeout
+
+	idleMu     sync.Mutex
+	aloneTimer *time.Timer
+	emptyTimer *time.Timer
+	leaving    bool
+	closed     bool
+}
+
+// IdleTimeout is how long the service waits before leaving for one idle reason.
+// Enabled is false when the operator turned that reason off.
+type IdleTimeout struct {
+	After   time.Duration
+	Enabled bool
+}
+
+// ServiceConfig is everything NewService needs. It is a struct because the
+// seams, the two idle timeouts and the two IDs would otherwise be eight
+// positional arguments of largely interchangeable types.
+type ServiceConfig struct {
+	GuildID       snowflake.ID
+	ApplicationID snowflake.ID
+	Lavalink      Lavalink
+	Voice         Voice
+	VoiceStates   VoiceStates
+	Logger        *slog.Logger
+
+	IdleAlone      IdleTimeout
+	IdleEmptyQueue IdleTimeout
 }
 
 // NewService builds the service for the one guild the bot serves.
-func NewService(guildID snowflake.ID, lava Lavalink, voice Voice, logger *slog.Logger) *Service {
+func NewService(cfg ServiceConfig) *Service {
 	return &Service{
-		guildID:     guildID,
-		lavalink:    lava,
-		voice:       voice,
-		queue:       &queue.Queue{},
-		logger:      logger,
-		loadTimeout: defaultLoadTimeout,
+		guildID:        cfg.GuildID,
+		applicationID:  cfg.ApplicationID,
+		lavalink:       cfg.Lavalink,
+		voice:          cfg.Voice,
+		voiceStates:    cfg.VoiceStates,
+		queue:          &queue.Queue{},
+		logger:         cfg.Logger,
+		loadTimeout:    defaultLoadTimeout,
+		idleAlone:      cfg.IdleAlone,
+		idleEmptyQueue: cfg.IdleEmptyQueue,
 	}
 }
 

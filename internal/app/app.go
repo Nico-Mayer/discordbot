@@ -76,7 +76,16 @@ func Run(ctx context.Context, cfg config.Config, logger *slog.Logger, opts Optio
 	}
 
 	lava := disgolink.New(client.ApplicationID, disgolink.WithLogger(logger))
-	service := music.NewService(cfg.GuildID, newLavalinkAdapter(lava), client, logger)
+	service := music.NewService(music.ServiceConfig{
+		GuildID:        cfg.GuildID,
+		ApplicationID:  client.ApplicationID,
+		Lavalink:       newLavalinkAdapter(lava),
+		Voice:          client,
+		VoiceStates:    newVoiceStateAdapter(client.Caches),
+		Logger:         logger,
+		IdleAlone:      music.IdleTimeout(cfg.IdleAlone),
+		IdleEmptyQueue: music.IdleTimeout(cfg.IdleEmptyQueue),
+	})
 	events := music.NewEvents(ctx, service, lava, client.ApplicationID, logger)
 
 	lava.AddListeners(
@@ -120,6 +129,13 @@ func Run(ctx context.Context, cfg config.Config, logger *slog.Logger, opts Optio
 				logger.ErrorContext(ctx, "could not leave the voice channel", slog.Any("err", err))
 			}
 		},
+	})
+
+	// Registered after the leave step so it lands ahead of it: a countdown that
+	// elapses mid-shutdown would otherwise act on a client already being closed.
+	registerFirst(cleanup{
+		name: "stop idle countdowns",
+		run:  func(context.Context) { service.Close() },
 	})
 
 	logSelf(ctx, logger, func() (*discord.User, error) {

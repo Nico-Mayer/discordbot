@@ -9,7 +9,7 @@ _Skills: `golang-continuous-integration` (owns `.github/workflows/*.yml` and the
 - [x] 1.3 Add `.github/workflows/ci.yml` running `mise run check` on push and pull request to `main`, and verify the workflow is picked up by `gh workflow list` and its first run completes green
 - [x] 1.4 Make the existing Docker workflow depend on the new check job so an image is never pushed from a build that fails formatting, vet, or tests, and verify the `needs:` reference resolves
 - [x] 1.5 Add a coverage step to the check task reporting total coverage via `go test -coverprofile`, with no threshold gate; verify the percentage is printed and that a low number does not fail the build
-- [ ] 1.6 Run `/golang-how-to configure` to write force-trigger rules for the vendored Go skills into `.claude/CLAUDE.md`, so the skills listed per group below load during apply instead of firing opportunistically; verify `.claude/CLAUDE.md` names the skills and that `golang-lint` and `golang-performance` are excluded per the design
+- [x] 1.6 Run `/golang-how-to configure` to write force-trigger rules for the vendored Go skills into `.claude/CLAUDE.md`, so the skills listed per group below load during apply instead of firing opportunistically; verify `.claude/CLAUDE.md` names the skills and that `golang-lint` and `golang-performance` are excluded per the design
 
 ## 2. Queue package
 
@@ -104,4 +104,4 @@ _Skills: `golang-documentation` (README, doc comments), `golang-dependency-manag
 - [x] 8.5 Run `mise run check` and verify build, `gofmt`, `go vet`, and `go test -race ./...` all pass clean
 - [x] 8.6 Add `go.uber.org/goleak` as a test-only dependency and assert the shutdown path leaves no goroutines behind; verify the leak check fails when a cleanup step is deliberately removed
 - [x] 8.7 Run `govulncheck ./...` and verify it reports no actionable findings in the module tree
-- [ ] 8.8 Start the bot against a live Lavalink node and manually exercise `/play` with a search query and with a URL, `/pause` twice, `/queue`, `/now-playing`, `/skip`, and `/stop`, then confirm SIGINT leaves the voice channel and exits zero
+- [x] 8.8 Start the bot against a live Lavalink node and manually exercise `/play` with a search query and with a URL, `/pause` twice, `/queue`, `/now-playing`, `/skip`, and `/stop`, then confirm SIGINT leaves the voice channel and exits zero

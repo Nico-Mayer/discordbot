@@ -3,6 +3,7 @@ package music
 import (
 	"context"
 	"io"
+	"iter"
 	"log/slog"
 	"sync"
 
@@ -12,6 +13,8 @@ import (
 
 const testGuildID = snowflake.ID(111111111111111111)
 const foreignGuildID = snowflake.ID(222222222222222222)
+const testChannelID = snowflake.ID(333333333333333333)
+const otherUserID = snowflake.ID(444444444444444444)
 
 func discardLogger() *slog.Logger {
 	return slog.New(slog.NewTextHandler(io.Discard, nil))
@@ -175,4 +178,70 @@ func (f *fakeVoice) recorded() []voiceCall {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	return append([]voiceCall(nil), f.calls...)
+}
+
+var _ VoiceStates = (*fakeVoiceStates)(nil)
+
+// fakeVoiceStates stands in for the Discord voice state cache. Zero value: the
+// guild has nobody in any voice channel.
+type fakeVoiceStates struct {
+	mu     sync.Mutex
+	states []VoiceState
+}
+
+func (f *fakeVoiceStates) VoiceStates(snowflake.ID) iter.Seq[VoiceState] {
+	f.mu.Lock()
+	states := append([]VoiceState(nil), f.states...)
+	f.mu.Unlock()
+
+	return func(yield func(VoiceState) bool) {
+		for _, state := range states {
+			if !yield(state) {
+				return
+			}
+		}
+	}
+}
+
+func (f *fakeVoiceStates) set(states ...VoiceState) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.states = states
+}
+
+func inChannel(userID snowflake.ID, channelID snowflake.ID) VoiceState {
+	return VoiceState{UserID: userID, ChannelID: &channelID}
+}
+
+// linkedVoice keeps a fakeVoiceStates in step with the joins and leaves the
+// service issues, the way the gateway cache does in production.
+type linkedVoice struct {
+	fakeVoice
+	states *fakeVoiceStates
+}
+
+func newLinkedVoice(states *fakeVoiceStates) *linkedVoice {
+	return &linkedVoice{states: states}
+}
+
+func (l *linkedVoice) UpdateVoiceState(ctx context.Context, guildID snowflake.ID, channelID *snowflake.ID, mute bool, deaf bool) error {
+	err := l.fakeVoice.UpdateVoiceState(ctx, guildID, channelID, mute, deaf)
+	if err != nil {
+		return err
+	}
+
+	l.states.mu.Lock()
+	defer l.states.mu.Unlock()
+
+	kept := l.states.states[:0]
+	for _, state := range l.states.states {
+		if state.UserID != selfID {
+			kept = append(kept, state)
+		}
+	}
+	if channelID != nil {
+		kept = append(kept, VoiceState{UserID: selfID, ChannelID: channelID})
+	}
+	l.states.states = kept
+	return nil
 }

@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 
@@ -22,6 +23,8 @@ func setValidEnv(t *testing.T) {
 	t.Setenv("LAVALINK_HOST", "lavalink.internal")
 	t.Setenv("LAVALINK_PORT", "2333")
 	t.Setenv("LAVALINK_PASSWORD", "valid-password")
+	t.Setenv("IDLE_ALONE_SECONDS", "")
+	t.Setenv("IDLE_EMPTY_QUEUE_SECONDS", "")
 }
 
 func TestLoadHappyPath(t *testing.T) {
@@ -179,4 +182,61 @@ func TestLoadErrorsNeverContainSecrets(t *testing.T) {
 	msg := err.Error()
 	require.NotContains(t, msg, secretToken)
 	require.NotContains(t, msg, secretPassword)
+}
+
+func TestLoadIdleTimeouts(t *testing.T) {
+	tests := []struct {
+		name    string
+		value   string
+		want    config.IdleTimeout
+		wantErr bool
+	}{
+		{name: "unset defaults to sixty seconds", value: "", want: config.IdleTimeout{After: 60 * time.Second, Enabled: true}},
+		{name: "zero leaves immediately", value: "0", want: config.IdleTimeout{Enabled: true}},
+		{name: "positive number of seconds", value: "300", want: config.IdleTimeout{After: 300 * time.Second, Enabled: true}},
+		{name: "off disables leaving", value: "off", want: config.IdleTimeout{}},
+		{name: "negative is rejected", value: "-1", wantErr: true},
+		{name: "duration string is rejected", value: "30s", wantErr: true},
+		{name: "unknown literal is rejected", value: "never", wantErr: true},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			setValidEnv(t)
+			t.Setenv("IDLE_ALONE_SECONDS", test.value)
+
+			cfg, err := config.Load()
+			if test.wantErr {
+				require.ErrorIs(t, err, config.ErrInvalid)
+				require.Contains(t, err.Error(), "IDLE_ALONE_SECONDS")
+				return
+			}
+
+			require.NoError(t, err)
+			require.Equal(t, test.want, cfg.IdleAlone)
+		})
+	}
+}
+
+func TestLoadIdleTimeoutsAreIndependent(t *testing.T) {
+	setValidEnv(t)
+	t.Setenv("IDLE_ALONE_SECONDS", "off")
+
+	cfg, err := config.Load()
+	require.NoError(t, err)
+
+	require.Equal(t, config.IdleTimeout{}, cfg.IdleAlone)
+	require.Equal(t, config.IdleTimeout{After: 60 * time.Second, Enabled: true}, cfg.IdleEmptyQueue)
+}
+
+func TestLoadReportsIdleAndMissingVariablesTogether(t *testing.T) {
+	setValidEnv(t)
+	t.Setenv("TOKEN", "")
+	t.Setenv("IDLE_EMPTY_QUEUE_SECONDS", "soon")
+
+	_, err := config.Load()
+	require.ErrorIs(t, err, config.ErrMissing)
+	require.ErrorIs(t, err, config.ErrInvalid)
+	require.Contains(t, err.Error(), "TOKEN")
+	require.Contains(t, err.Error(), "IDLE_EMPTY_QUEUE_SECONDS")
 }
