@@ -40,7 +40,7 @@ func (c *capturingLogger) records(t *testing.T) []map[string]any {
 	defer c.mu.Unlock()
 
 	var out []map[string]any
-	for _, line := range bytes.Split(bytes.TrimSpace(c.buf.Bytes()), []byte("\n")) {
+	for line := range bytes.SplitSeq(bytes.TrimSpace(c.buf.Bytes()), []byte("\n")) {
 		if len(line) == 0 {
 			continue
 		}
@@ -78,8 +78,8 @@ func TestCheckGuild(t *testing.T) {
 		guildID *snowflake.ID
 		wantErr error
 	}{
-		{name: "configured guild", guildID: ptr(testGuildID)},
-		{name: "foreign guild", guildID: ptr(foreignGuildID), wantErr: ErrForeignGuild},
+		{name: "configured guild", guildID: new(testGuildID)},
+		{name: "foreign guild", guildID: new(foreignGuildID), wantErr: ErrForeignGuild},
 		{name: "no guild at all", guildID: nil, wantErr: ErrForeignGuild},
 	}
 

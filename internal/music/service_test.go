@@ -121,7 +121,7 @@ func TestServiceStop(t *testing.T) {
 	t.Run("stops, leaves voice and clears the queue", func(t *testing.T) {
 		t.Parallel()
 
-		player := &fakePlayer{track: ptr(encodedTrack("current"))}
+		player := &fakePlayer{track: new(encodedTrack("current"))}
 		lava := &fakeLavalink{existingPlayer: player}
 		voice := &fakeVoice{}
 		s := newTestService(t, lava, voice)
@@ -151,7 +151,7 @@ func TestServiceStop(t *testing.T) {
 	t.Run("failing to null the track leaves no partial state", func(t *testing.T) {
 		t.Parallel()
 
-		player := &fakePlayer{track: ptr(encodedTrack("current")), updateErr: errors.New("node down")}
+		player := &fakePlayer{track: new(encodedTrack("current")), updateErr: errors.New("node down")}
 		voice := &fakeVoice{}
 		s := newTestService(t, &fakeLavalink{existingPlayer: player}, voice)
 		s.queue.Add(encodedTrack("a"))
@@ -165,7 +165,7 @@ func TestServiceStop(t *testing.T) {
 	t.Run("failing to leave voice leaves the queue intact", func(t *testing.T) {
 		t.Parallel()
 
-		player := &fakePlayer{track: ptr(encodedTrack("current"))}
+		player := &fakePlayer{track: new(encodedTrack("current"))}
 		voice := &fakeVoice{err: errors.New("gateway down")}
 		s := newTestService(t, &fakeLavalink{existingPlayer: player}, voice)
 		s.queue.Add(encodedTrack("a"))
@@ -182,7 +182,7 @@ func TestServiceSkip(t *testing.T) {
 	t.Run("plays the next queued track", func(t *testing.T) {
 		t.Parallel()
 
-		player := &fakePlayer{track: ptr(encodedTrack("current"))}
+		player := &fakePlayer{track: new(encodedTrack("current"))}
 		s := newTestService(t, &fakeLavalink{existingPlayer: player}, nil)
 		s.queue.Add(encodedTrack("next"), encodedTrack("after"))
 
@@ -220,7 +220,7 @@ func TestServiceSkip(t *testing.T) {
 	t.Run("update failure", func(t *testing.T) {
 		t.Parallel()
 
-		player := &fakePlayer{track: ptr(encodedTrack("current")), updateErr: errors.New("node down")}
+		player := &fakePlayer{track: new(encodedTrack("current")), updateErr: errors.New("node down")}
 		s := newTestService(t, &fakeLavalink{existingPlayer: player}, nil)
 		s.queue.Add(encodedTrack("next"))
 
@@ -240,7 +240,7 @@ func TestServiceNowPlaying(t *testing.T) {
 	}{
 		{
 			name:   "a track is playing",
-			player: &fakePlayer{track: ptr(encodedTrack("current")), position: 30 * lavalink.Second},
+			player: &fakePlayer{track: new(encodedTrack("current")), position: 30 * lavalink.Second},
 			want:   "current",
 		},
 		{
@@ -289,7 +289,7 @@ func TestServiceCurrent(t *testing.T) {
 	}{
 		{
 			name:   "a track is playing",
-			player: &fakePlayer{track: ptr(encodedTrack("current")), position: 30 * lavalink.Second},
+			player: &fakePlayer{track: new(encodedTrack("current")), position: 30 * lavalink.Second},
 			want:   "current",
 			wantOk: true,
 		},
@@ -406,6 +406,42 @@ func TestServiceEnqueue(t *testing.T) {
 			wantJoin:       true,
 		},
 		{
+			name:           "a padded url is trimmed before loading",
+			identifier:     "  https://example.com/track\n",
+			voiceChannel:   &channelID,
+			node:           &fakeNode{result: trackResult},
+			wantTitle:      "loaded",
+			wantIdentifier: "https://example.com/track",
+			wantJoin:       true,
+		},
+		{
+			name:           "a url copied out of a bot reply loses its brackets",
+			identifier:     "<https://example.com/track>",
+			voiceChannel:   &channelID,
+			node:           &fakeNode{result: trackResult},
+			wantTitle:      "loaded",
+			wantIdentifier: "https://example.com/track",
+			wantJoin:       true,
+		},
+		{
+			name:           "an uppercased scheme is loaded as a url",
+			identifier:     "HTTPS://example.com/track",
+			voiceChannel:   &channelID,
+			node:           &fakeNode{result: trackResult},
+			wantTitle:      "loaded",
+			wantIdentifier: "HTTPS://example.com/track",
+			wantJoin:       true,
+		},
+		{
+			name:           "a padded search phrase is trimmed before searching",
+			identifier:     "  never gonna give you up  ",
+			voiceChannel:   &channelID,
+			node:           &fakeNode{result: searchResult(encodedTrack("first"))},
+			wantTitle:      "first",
+			wantIdentifier: lavalink.SearchTypeYouTubeMusic.Apply("never gonna give you up"),
+			wantJoin:       true,
+		},
+		{
 			name:           "playlist uses its first track only",
 			identifier:     "https://example.com/playlist",
 			voiceChannel:   &channelID,
@@ -458,7 +494,7 @@ func TestServiceEnqueue(t *testing.T) {
 			identifier:   "song",
 			voiceChannel: &channelID,
 			node:         &fakeNode{result: trackResult},
-			currentTrack: ptr(encodedTrack("current")),
+			currentTrack: new(encodedTrack("current")),
 			wantTitle:    "loaded",
 			wantQueued:   true,
 			wantPosition: 1,
@@ -538,7 +574,7 @@ func TestServiceEnqueueQueuePositionsCountUp(t *testing.T) {
 	channelID := snowflake.ID(333333333333333333)
 	lava := &fakeLavalink{
 		node:   &fakeNode{result: &lavalink.LoadResult{LoadType: lavalink.LoadTypeTrack, Data: encodedTrack("loaded")}},
-		player: &fakePlayer{track: ptr(encodedTrack("current"))},
+		player: &fakePlayer{track: new(encodedTrack("current"))},
 	}
 	s := newTestService(t, lava, &fakeVoice{})
 
@@ -547,6 +583,60 @@ func TestServiceEnqueueQueuePositionsCountUp(t *testing.T) {
 		require.NoError(t, err)
 		require.True(t, result.Queued)
 		require.Equal(t, want, result.Position)
+	}
+}
+
+func TestServiceEnqueueQuotesWhatItSearchedFor(t *testing.T) {
+	t.Parallel()
+
+	channelID := snowflake.ID(333333333333333333)
+	empty := &lavalink.LoadResult{LoadType: lavalink.LoadTypeEmpty, Data: lavalink.Empty{}}
+	s := newTestService(t, &fakeLavalink{node: &fakeNode{result: empty}}, nil)
+
+	_, err := s.Enqueue(context.Background(), PlayRequest{
+		Identifier:     "  <never gonna give you up>  ",
+		VoiceChannelID: &channelID,
+	})
+
+	require.ErrorIs(t, err, ErrNoResults)
+	msg, known := UserMessage(err)
+	require.True(t, known)
+	require.Contains(t, msg, "`never gonna give you up`", "the reply names the value the node was asked for")
+	require.NotContains(t, msg, "<", "not the packaging the member pasted")
+}
+
+func TestServiceEnqueueRejectsAValueThatIsEmptyOnceNormalised(t *testing.T) {
+	t.Parallel()
+
+	channelID := snowflake.ID(333333333333333333)
+
+	tests := []struct {
+		name       string
+		identifier string
+	}{
+		{name: "nothing at all", identifier: ""},
+		{name: "only whitespace", identifier: "   "},
+		{name: "an empty bracket pair", identifier: "<>"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			node := &fakeNode{result: &lavalink.LoadResult{LoadType: lavalink.LoadTypeTrack, Data: encodedTrack("loaded")}}
+			voice := &fakeVoice{}
+			s := newTestService(t, &fakeLavalink{node: node}, voice)
+
+			_, err := s.Enqueue(context.Background(), PlayRequest{
+				Identifier:     tt.identifier,
+				VoiceChannelID: &channelID,
+			})
+
+			require.ErrorIs(t, err, ErrEmptyIdentifier)
+			require.Empty(t, node.loadedIdentifiers(), "there is nothing to ask the node for")
+			require.Empty(t, voice.recorded(), "and nothing to join a channel for")
+			require.Zero(t, s.queue.Len())
+		})
 	}
 }
 
@@ -669,5 +759,3 @@ func TestServiceDiscardQueue(t *testing.T) {
 	s.DiscardQueue()
 	require.Zero(t, s.queue.Len())
 }
-
-func ptr[T any](v T) *T { return &v }

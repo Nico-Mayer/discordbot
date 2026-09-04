@@ -24,6 +24,7 @@ func everyUserFacingString() map[string]string {
 		"msgNotInVoice":      msgNotInVoice,
 		"msgQueueEmpty":      msgQueueEmpty,
 		"msgNoResults":       msgNoResults,
+		"msgEmptyInput":      msgEmptyInput,
 		"msgForeignGuild":    msgForeignGuild,
 		"msgLoadFailed":      msgLoadFailed,
 		"msgGeneric":         msgGeneric,
@@ -102,6 +103,7 @@ func TestErrorCopyNamesAWayForward(t *testing.T) {
 		{name: "not in voice names the channel", text: msgNotInVoice, want: "Sprachkanal"},
 		{name: "queue empty points at /play", text: msgQueueEmpty, want: "/play"},
 		{name: "no results suggests another search", text: msgNoResults, want: "Suchbegriff"},
+		{name: "an empty value says what to supply", text: msgEmptyInput, want: "Suchbegriff"},
 		{name: "load failure invites a retry", text: msgLoadFailed, want: "noch einmal"},
 		{name: "the generic failure invites a retry", text: msgGeneric, want: "noch einmal"},
 	}

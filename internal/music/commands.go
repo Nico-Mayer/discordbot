@@ -2,6 +2,11 @@ package music
 
 import "github.com/disgoorg/disgo/discord"
 
+// maxPlayValueLength lets the Discord client refuse an absurd paste instead of
+// spending a round trip on it. It is comfortably above any real link or search
+// phrase. A var only because the option field takes a pointer.
+var maxPlayValueLength = 1000
+
 // Commands is the bot's slash command set. It is registered for the single
 // configured guild, never globally.
 //
@@ -17,6 +22,7 @@ var Commands = []discord.ApplicationCommandCreate{
 				Name:        optionPlayName,
 				Description: optionPlayDesc,
 				Required:    true,
+				MaxLength:   &maxPlayValueLength,
 			},
 		},
 	},

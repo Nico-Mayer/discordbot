@@ -12,7 +12,7 @@ import (
 func TestEverySentinelHasAUserMessage(t *testing.T) {
 	t.Parallel()
 
-	sentinels := []error{ErrNoPlayer, ErrNotInVoice, ErrNothingPlaying, ErrQueueEmpty, ErrNoResults, ErrForeignGuild}
+	sentinels := []error{ErrNoPlayer, ErrNotInVoice, ErrNothingPlaying, ErrQueueEmpty, ErrNoResults, ErrForeignGuild, ErrEmptyIdentifier}
 	require.Len(t, userMessages, len(sentinels))
 
 	for _, sentinel := range sentinels {
@@ -43,6 +43,7 @@ func TestUserMessage(t *testing.T) {
 		{name: "queue empty", err: ErrQueueEmpty, wantKnown: true, wantMsg: msgQueueEmpty},
 		{name: "no results", err: ErrNoResults, wantKnown: true, wantMsg: msgNoResults},
 		{name: "foreign guild", err: ErrForeignGuild, wantKnown: true, wantMsg: msgForeignGuild},
+		{name: "empty identifier", err: ErrEmptyIdentifier, wantKnown: true, wantMsg: msgEmptyInput},
 		{name: "wrapped sentinel", err: fmt.Errorf("update player: %w", ErrNoPlayer), wantKnown: true, wantMsg: msgNothingPlaying},
 		{name: "no results names the identifier", err: &NoResultsError{Identifier: "never gonna give you up"}, wantKnown: true, contains: "never gonna give you up"},
 		{name: "load error names no upstream detail", err: &LoadError{Identifier: "x", Err: errors.New("node unreachable")}, wantKnown: true, wantMsg: msgLoadFailed},
@@ -111,7 +112,7 @@ func TestLoadErrorKeepsTheUpstreamTextOutOfTheUserMessage(t *testing.T) {
 	err := &LoadError{Identifier: "x", Err: errors.New(upstream)}
 
 	require.Contains(t, err.Error(), upstream, "the operator-facing error must carry the detail")
-	for _, word := range strings.Fields(upstream) {
+	for word := range strings.FieldsSeq(upstream) {
 		require.NotContains(t, err.UserMessage(), word, "the reply must not quote the upstream error")
 	}
 }

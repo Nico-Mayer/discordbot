@@ -35,7 +35,7 @@ func newCapturingLogger(t *testing.T) (*slog.Logger, func() []map[string]any) {
 		defer mu.Unlock()
 
 		var out []map[string]any
-		for _, line := range bytes.Split(bytes.TrimSpace(buf.Bytes()), []byte("\n")) {
+		for line := range bytes.SplitSeq(bytes.TrimSpace(buf.Bytes()), []byte("\n")) {
 			if len(line) == 0 {
 				continue
 			}

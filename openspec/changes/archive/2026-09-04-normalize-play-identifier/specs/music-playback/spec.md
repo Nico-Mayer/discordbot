@@ -4,7 +4,7 @@
 
 The `/play` command SHALL accept a `titel` string that is either a URL or a search query.
 
-The value SHALL be normalised before it is classified: surrounding whitespace is removed, a single pair of wrapping angle brackets (`<` and `>`) is removed, and the URL scheme is recognised regardless of its case. Classification and loading SHALL both use the normalised value, so a value supplied as a link is loaded as a link.
+The value SHALL be normalised before it is classified: surrounding whitespace is removed, wrapping angle brackets (`<` and `>`) are removed, and the URL scheme is recognised regardless of its case. Classification and loading SHALL both use the normalised value, so a value supplied as a link is loaded as a link.
 
 A value that is empty after normalisation MUST be rejected without contacting the audio node. A value that is not a URL MUST be treated as a YouTube Music search. The bot MUST join the voice channel the requesting member is currently in.
 

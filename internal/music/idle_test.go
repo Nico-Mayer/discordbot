@@ -377,7 +377,7 @@ func TestServiceQueueingDuringTheCountdownKeepsTheBotInTheChannel(t *testing.T) 
 
 	result, err := f.service.Enqueue(context.Background(), PlayRequest{
 		Identifier:     "next",
-		VoiceChannelID: ptr(testChannelID),
+		VoiceChannelID: new(testChannelID),
 	})
 	require.NoError(t, err)
 	require.False(t, result.Queued, "the track must start rather than wait behind a finished one")

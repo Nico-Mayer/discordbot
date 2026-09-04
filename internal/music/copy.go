@@ -31,6 +31,7 @@ const (
 	msgNotInVoice     = "Tritt zuerst einem Sprachkanal bei."
 	msgQueueEmpty     = "Die Warteschlange ist leer. Mit `/play` fügst du Titel hinzu."
 	msgNoResults      = "Nichts gefunden. Prüfe den Link oder versuche einen anderen Suchbegriff."
+	msgEmptyInput     = "Gib einen Link oder einen Suchbegriff ein."
 	msgForeignGuild   = "Dieser Bot ist für diesen Server nicht freigeschaltet."
 	msgLoadFailed     = "Der Titel konnte nicht geladen werden. Versuche es noch einmal."
 	msgGeneric        = "Das hat nicht geklappt. Versuche es noch einmal."

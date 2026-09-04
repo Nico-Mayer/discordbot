@@ -6,7 +6,11 @@ Lets members of one configured Discord guild play audio in a voice channel throu
 
 ### Requirement: Play a track or search query
 
-The `/play` command SHALL accept a `titel` string that is either a URL or a search query. A value that is not a URL MUST be treated as a YouTube Music search. The bot MUST join the voice channel the requesting member is currently in.
+The `/play` command SHALL accept a `titel` string that is either a URL or a search query.
+
+The value SHALL be normalised before it is classified: surrounding whitespace is removed, wrapping angle brackets (`<` and `>`) are removed, and the URL scheme is recognised regardless of its case. Classification and loading SHALL both use the normalised value, so a value supplied as a link is loaded as a link.
+
+A value that is empty after normalisation MUST be rejected without contacting the audio node. A value that is not a URL MUST be treated as a YouTube Music search. The bot MUST join the voice channel the requesting member is currently in.
 
 Because loading a track can exceed Discord's initial interaction response window, the bot MUST acknowledge the interaction before loading and then edit that acknowledgement with the result.
 
@@ -26,6 +30,40 @@ Because loading a track can exceed Discord's initial interaction response window
 
 - **WHEN** a member in a voice channel runs `/play` with a value starting `http://` or `https://`
 - **THEN** the bot MUST load that URL as given and MUST NOT prepend a search prefix
+
+#### Scenario: URL is surrounded by whitespace
+
+- **WHEN** a member runs `/play` with a URL that has a leading or trailing space, tab, or newline
+- **THEN** the bot MUST treat it as a URL
+- **AND** the value loaded MUST have the surrounding whitespace removed
+
+#### Scenario: URL is wrapped in angle brackets
+
+- **WHEN** a member runs `/play` with a URL wrapped as `<https://example.com/track>`, as produced by copying a link out of one of the bot's own replies
+- **THEN** the bot MUST treat it as a URL
+- **AND** the value loaded MUST NOT include the angle brackets
+
+#### Scenario: URL scheme is not lowercase
+
+- **WHEN** a member runs `/play` with a value whose scheme is written `HTTPS://` or `Http://`
+- **THEN** the bot MUST treat it as a URL rather than as a search query
+
+#### Scenario: A search phrase that merely contains a URL
+
+- **WHEN** a member runs `/play` with a value that contains a URL somewhere other than at its start, such as `listen to https://example.com/track now`
+- **THEN** the bot MUST treat the whole value as a search query
+- **AND** the bot MUST NOT extract the URL from within it
+
+#### Scenario: Value is empty after normalisation
+
+- **WHEN** a member runs `/play` with a value that is empty or contains only whitespace
+- **THEN** the bot MUST reply with an error telling them to supply a link or a search term
+- **AND** the bot MUST NOT contact the audio node, join a channel, or modify the queue
+
+#### Scenario: Value exceeds the option's maximum length
+
+- **WHEN** a member supplies a `/play` value longer than the option's configured maximum
+- **THEN** Discord MUST reject it before the interaction reaches the bot
 
 #### Scenario: A track is already playing
 
@@ -52,6 +90,11 @@ Enqueueing a whole playlist is deliberately out of scope for this capability as 
 - **WHEN** the identifier resolves to no tracks and is long enough that quoting it whole would breach the reply size limit
 - **THEN** the bot MUST shorten the quoted identifier with a visible marker
 - **AND** the reply MUST be delivered successfully rather than failing the interaction
+
+#### Scenario: Nothing found quotes what was searched for
+
+- **WHEN** a normalised value resolves to no tracks
+- **THEN** the error MUST quote the normalised value rather than the raw one, so it matches what the bot actually searched for
 
 #### Scenario: Loading fails
 

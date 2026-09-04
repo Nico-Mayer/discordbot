@@ -140,7 +140,7 @@ func TestOnVoiceStateUpdateCancelsTheCountdownWhenAUserRejoins(t *testing.T) {
 	require.NotNil(t, f.service.aloneTimer)
 
 	f.states.set(inChannel(selfID, testChannelID), inChannel(otherUserID, testChannelID))
-	e.handleVoiceStateUpdate(testGuildID, otherUserID, ptr(testChannelID), "session")
+	e.handleVoiceStateUpdate(testGuildID, otherUserID, new(testChannelID), "session")
 
 	require.Nil(t, f.service.aloneTimer)
 }
@@ -154,7 +154,7 @@ func TestOnVoiceStateUpdateReevaluatesWhenTheBotChangesChannel(t *testing.T) {
 	e := newTestEvents(t, f.service, &fakeForwarder{}, nil)
 
 	f.states.set(inChannel(selfID, otherChannelID), inChannel(otherUserID, testChannelID))
-	e.handleVoiceStateUpdate(testGuildID, selfID, ptr(otherChannelID), "session")
+	e.handleVoiceStateUpdate(testGuildID, selfID, new(otherChannelID), "session")
 
 	require.NotNil(t, f.service.aloneTimer, "the bot moved to a channel nobody is in")
 }
@@ -228,7 +228,7 @@ func TestOnVoiceServerUpdateGuildGuard(t *testing.T) {
 func TestForeignGuildVoiceEventsLeaveTheConfiguredStateUntouched(t *testing.T) {
 	t.Parallel()
 
-	player := &fakePlayer{track: ptr(encodedTrack("current"))}
+	player := &fakePlayer{track: new(encodedTrack("current"))}
 	voice := &fakeVoice{}
 	forwarder := &fakeForwarder{}
 	s := newTestService(t, &fakeLavalink{existingPlayer: player}, voice)
@@ -298,7 +298,7 @@ func TestOnTrackEnd(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			player := &fakePlayer{track: ptr(encodedTrack("current"))}
+			player := &fakePlayer{track: new(encodedTrack("current"))}
 			voice := &fakeVoice{}
 			s := newTestService(t, &fakeLavalink{existingPlayer: player}, voice)
 			s.queue.Add(tt.queued...)
@@ -380,7 +380,7 @@ func TestOnTrackEndReasonsThatForbidAdvancing(t *testing.T) {
 			t.Parallel()
 			require.False(t, reason.MayStartNext())
 
-			player := &fakePlayer{track: ptr(encodedTrack("current"))}
+			player := &fakePlayer{track: new(encodedTrack("current"))}
 			s := newTestService(t, &fakeLavalink{existingPlayer: player}, &fakeVoice{})
 			s.queue.Add(encodedTrack("next"))
 			e := newTestEvents(t, s, &fakeForwarder{}, nil)

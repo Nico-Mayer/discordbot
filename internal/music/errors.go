@@ -14,6 +14,10 @@ var (
 	ErrQueueEmpty     = errors.New("queue is empty")
 	ErrNoResults      = errors.New("no tracks found")
 	ErrForeignGuild   = errors.New("interaction is not from the configured guild")
+
+	// ErrEmptyIdentifier is separate from ErrNoResults because nothing was
+	// searched for: "check the link" is no help to someone who supplied none.
+	ErrEmptyIdentifier = errors.New("identifier is empty after normalisation")
 )
 
 // GenericErrorMessage is shown for any failure that is not one of the sentinels.
@@ -32,6 +36,7 @@ var userMessages = []struct {
 	{ErrQueueEmpty, msgQueueEmpty},
 	{ErrNoResults, msgNoResults},
 	{ErrForeignGuild, msgForeignGuild},
+	{ErrEmptyIdentifier, msgEmptyInput},
 }
 
 // NoResultsError reports that an identifier resolved to nothing, so the reply can
@@ -46,9 +51,10 @@ func (e *NoResultsError) Error() string {
 
 func (e *NoResultsError) Unwrap() error { return ErrNoResults }
 
-// UserMessage bounds the quoted identifier, because /play sets no maximum length
-// and an unbounded quote would push the embed description past what Discord
-// accepts - failing the very reply that reports the failure.
+// UserMessage bounds the quoted identifier. The /play option carries a maximum
+// length, but that limit only reaches a client on the next command sync, so the
+// bound cannot depend on it: an unbounded quote would push the embed description
+// past what Discord accepts, failing the very reply that reports the failure.
 func (e *NoResultsError) UserMessage() string {
 	return msgNoResultsFor(clamp(e.Identifier, quotedInputLimit))
 }
@@ -75,6 +81,8 @@ func (e *LoadError) UserMessage() string {
 // reports whether the error was recognised. Unrecognised errors get
 // GenericErrorMessage and are the caller's cue to log at error level.
 func UserMessage(err error) (string, bool) {
+	// Not errors.AsType: its type parameter must satisfy error, and this target
+	// deliberately does not - it matches on carrying a message, nothing else.
 	var withMessage interface{ UserMessage() string }
 	if errors.As(err, &withMessage) {
 		return withMessage.UserMessage(), true

@@ -103,14 +103,22 @@ type PlayResult struct {
 	Position int
 }
 
-// Enqueue resolves an identifier, joins the caller's voice channel and either
-// starts the track or appends it to the queue.
+// Enqueue normalises and resolves an identifier, joins the caller's voice
+// channel and either starts the track or appends it to the queue. An identifier
+// that is empty once normalised is rejected before any node is contacted.
 func (s *Service) Enqueue(ctx context.Context, req PlayRequest) (PlayResult, error) {
+	// Normalising here, once, is what keeps the value the node loads and the
+	// value an error quotes back the same thing.
+	identifier := normalizeIdentifier(req.Identifier)
+	if identifier == "" {
+		return PlayResult{}, ErrEmptyIdentifier
+	}
+
 	if req.VoiceChannelID == nil {
 		return PlayResult{}, ErrNotInVoice
 	}
 
-	track, err := s.loadTrack(ctx, req.Identifier)
+	track, err := s.loadTrack(ctx, identifier)
 	if err != nil {
 		return PlayResult{}, err
 	}

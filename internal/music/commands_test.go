@@ -48,4 +48,6 @@ func TestPlayOptionIsLabelledForTheReader(t *testing.T) {
 	require.Equal(t, "titel", option.Name)
 	require.Equal(t, "Link oder Suchbegriff", option.Description, "the label alone does not say a link is accepted")
 	require.True(t, option.Required)
+	require.NotNil(t, option.MaxLength, "an unbounded value costs a round trip to reject")
+	require.Equal(t, 1000, *option.MaxLength)
 }
