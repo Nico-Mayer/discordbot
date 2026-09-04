@@ -23,3 +23,7 @@ The following Go skills from `samber/cc-skills-golang` MUST always be applied wh
 - `samber/cc-skills-golang@golang-stretchr-testify`
 - `samber/cc-skills-golang@golang-testing`
 - `samber/cc-skills-golang@golang-troubleshooting`
+
+## Tooling
+
+No `golangci-lint` in this project - it is overkill here. Do not add it or a `.golangci.yml`. The quality gate is `mise run check` (build, gofmt, `go vet`, `go test -race`, coverage report). For modern-Go suggestions use `go fix -diff ./...` instead of a linter.

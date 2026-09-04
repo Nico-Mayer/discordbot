@@ -137,26 +137,25 @@ A user-facing reply SHALL NOT contain raw text produced by an upstream system, a
 - **WHEN** an interaction arrives from a guild the bot does not serve
 - **THEN** the reply MUST NOT contain any guild ID or channel ID
 
-### Requirement: A reply carries exactly one status icon
+### Requirement: Text states the outcome without help from an icon
 
-Every reply SHALL show at most one leading status icon, placed at the start of the embed title when the embed has one, and otherwise at the start of the description. A trailing icon MUST NOT be used, and two icons MUST NOT appear in the same reply.
+Every user-facing reply SHALL state its outcome in words. An icon MUST NOT be the only carrier of meaning, so a reply still reads correctly to a screen reader, in a client that fails to render the icon, and where the icon is unfamiliar to the reader.
 
-An icon MUST NOT be the only carrier of meaning: the text alone MUST convey the outcome, so the reply still reads correctly to a screen reader or where the icon fails to render.
+How many icons a reply may carry and where they are placed is defined by `embed-presentation`. This requirement governs only the words: the copy MUST be written so that it survives every icon being removed.
 
 #### Scenario: The queue is empty
 
-- **WHEN** a user runs `/queue` while the queue holds no tracks
-- **THEN** the reply MUST show exactly one icon
-- **AND** the text MUST state that the queue is empty without relying on the icon
+- **WHEN** a member runs `/queue` while the queue holds no tracks
+- **THEN** the text MUST state that the queue is empty without relying on the icon
 
 #### Scenario: A skip is confirmed
 
 - **WHEN** the bot confirms a skip
-- **THEN** any icon MUST come before the text, not after it
+- **THEN** the text alone MUST say that the track was skipped
 
-#### Scenario: Icons are stripped
+#### Scenario: Every icon is removed
 
-- **WHEN** every icon is removed from a reply
+- **WHEN** every icon is removed from any reply the bot can send
 - **THEN** the remaining text MUST still state the outcome unambiguously
 
 ### Requirement: Quoted user input is bounded

@@ -45,14 +45,18 @@ const (
 	replyQueueEmpty = "Die Warteschlange ist leer"
 )
 
-// Embed titles, author lines and field names.
+// Embed titles, author lines, headings and field names.
 const (
 	titleNowPlaying  = "Läuft gerade"
 	titleQueued      = "Zur Warteschlange hinzugefügt"
 	titleQueue       = "Warteschlange"
 	authorNowPlaying = "Läuft jetzt"
+	headingUpNext    = "Als Nächstes"
 	fieldDuration    = "Dauer"
 	fieldPosition    = "Position"
+
+	// markerLive stands where a duration would go for a track that has no end.
+	markerLive = "Live"
 )
 
 // quotedInputLimit caps how much of the member's own input a reply quotes back.
@@ -66,9 +70,13 @@ func msgNoResultsFor(identifier string) string {
 	return fmt.Sprintf("Nichts gefunden für `%s`. Prüfe den Link oder versuche einen anderen Suchbegriff.", identifier)
 }
 
-// footerQueueCount is the total shown under the queue listing.
-func footerQueueCount(n int) string {
-	return fmt.Sprintf("%d Titel in der Warteschlange", n)
+// footerQueueSummary is the total shown under the queue listing. A queue holding
+// a livestream has no full duration, so its total reads as a lower bound.
+func footerQueueSummary(n int, duration string, partial bool) string {
+	if partial {
+		return fmt.Sprintf("%d Titel · Gesamtdauer mindestens %s", n, duration)
+	}
+	return fmt.Sprintf("%d Titel · Gesamtdauer %s", n, duration)
 }
 
 // lineQueueResidual summarises the queued tracks the listing left out.

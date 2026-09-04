@@ -74,7 +74,7 @@ func TestNoResultsErrorBoundsTheQuotedIdentifier(t *testing.T) {
 	err := &NoResultsError{Identifier: strings.Repeat("x", 6000)}
 	description := errorEmbed(err.UserMessage()).Description
 
-	require.Less(t, len(description), embedDescriptionLimit, "the reply reporting the failure must itself send")
+	require.Less(t, len(description), limitDescription, "the reply reporting the failure must itself send")
 	require.Contains(t, description, "\u2026`", "the quoted value ends with a visible truncation marker")
 	require.Contains(t, description, "Pr\u00fcfe den Link", "truncating the input leaves the advice intact")
 }

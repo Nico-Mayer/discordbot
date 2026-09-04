@@ -9,6 +9,7 @@ import (
 	"github.com/disgoorg/disgo/handler"
 	"github.com/disgoorg/disgo/handler/middleware"
 	"github.com/disgoorg/disgo/rest"
+	"github.com/disgoorg/disgolink/v3/lavalink"
 	"github.com/disgoorg/snowflake/v2"
 )
 
@@ -58,7 +59,7 @@ func (c *commands) play(data discord.SlashCommandInteractionData, e *handler.Com
 		return err
 	}
 
-	embed := trackEmbed(result.Track)
+	embed := startedEmbed(result.Track)
 	if result.Queued {
 		embed = queuedEmbed(result.Track, result.Position)
 	}
@@ -102,7 +103,11 @@ func (c *commands) nowPlaying(_ discord.SlashCommandInteractionData, e *handler.
 }
 
 func (c *commands) queue(_ discord.SlashCommandInteractionData, e *handler.CommandEvent) error {
-	return reply(e, queueEmbed(c.service.Queue()))
+	var current *lavalink.Track
+	if track, ok := c.service.Current(); ok {
+		current = &track
+	}
+	return reply(e, queueEmbed(current, c.service.Queue()))
 }
 
 func reply(e *handler.CommandEvent, embed discord.Embed) error {

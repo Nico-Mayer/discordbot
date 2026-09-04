@@ -198,6 +198,22 @@ func (s *Service) NowPlaying() (lavalink.Track, lavalink.Duration, error) {
 	return *track, player.Position(), nil
 }
 
+// Current returns the track playing right now. Unlike NowPlaying it reports
+// absence as a boolean, because a caller that only wants to name the current
+// track - /queue does - is not in an error case when there is none.
+func (s *Service) Current() (lavalink.Track, bool) {
+	player := s.lavalink.ExistingPlayer(s.guildID)
+	if player == nil {
+		return lavalink.Track{}, false
+	}
+
+	track := player.Track()
+	if track == nil {
+		return lavalink.Track{}, false
+	}
+	return *track, true
+}
+
 // Queue returns the queued tracks in play order as a copy. The reply is bounded
 // by queueEmbed, which needs the full count for its footer.
 func (s *Service) Queue() []lavalink.Track {

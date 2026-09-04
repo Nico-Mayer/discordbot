@@ -278,6 +278,52 @@ func TestServiceNowPlaying(t *testing.T) {
 	}
 }
 
+func TestServiceCurrent(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name   string
+		player *fakePlayer
+		want   string
+		wantOk bool
+	}{
+		{
+			name:   "a track is playing",
+			player: &fakePlayer{track: ptr(encodedTrack("current")), position: 30 * lavalink.Second},
+			want:   "current",
+			wantOk: true,
+		},
+		{
+			name:   "player exists but is idle",
+			player: &fakePlayer{},
+		},
+		{
+			name: "no player",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			lava := &fakeLavalink{}
+			if tt.player != nil {
+				lava.existingPlayer = tt.player
+			}
+			s := newTestService(t, lava, nil)
+
+			track, ok := s.Current()
+
+			require.Equal(t, tt.wantOk, ok)
+			if !tt.wantOk {
+				require.Zero(t, track)
+				return
+			}
+			require.Equal(t, tt.want, track.Info.Title)
+		})
+	}
+}
+
 func TestServiceQueue(t *testing.T) {
 	t.Parallel()
 

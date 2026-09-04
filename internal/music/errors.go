@@ -50,7 +50,7 @@ func (e *NoResultsError) Unwrap() error { return ErrNoResults }
 // and an unbounded quote would push the embed description past what Discord
 // accepts - failing the very reply that reports the failure.
 func (e *NoResultsError) UserMessage() string {
-	return msgNoResultsFor(truncate(e.Identifier, quotedInputLimit))
+	return msgNoResultsFor(clamp(e.Identifier, quotedInputLimit))
 }
 
 // LoadError reports that loading an identifier failed at the Lavalink node.
