@@ -126,7 +126,7 @@ func Run(ctx context.Context, cfg config.Config, logger *slog.Logger, opts Optio
 		name: "leave voice channel",
 		run: func(ctx context.Context) {
 			if err := service.Leave(ctx); err != nil {
-				logger.ErrorContext(ctx, "could not leave the voice channel", slog.Any("err", err))
+				logger.ErrorContext(ctx, "could not leave the voice channel", slog.Any("error", err))
 			}
 		},
 	})
@@ -211,7 +211,7 @@ func enableResuming(ctx context.Context, node disgolink.Node, logger *slog.Logge
 
 	resuming, timeout := true, resumeTimeoutSeconds
 	if err := node.Update(ctx, lavalink.SessionUpdate{Resuming: &resuming, Timeout: &timeout}); err != nil {
-		logger.WarnContext(ctx, "could not enable lavalink session resuming", slog.Any("err", err))
+		logger.WarnContext(ctx, "could not enable lavalink session resuming", slog.Any("error", err))
 		return
 	}
 	logger.InfoContext(ctx, "lavalink session resuming enabled", slog.Int("timeout_seconds", resumeTimeoutSeconds))
@@ -222,7 +222,7 @@ func enableResuming(ctx context.Context, node disgolink.Node, logger *slog.Logge
 func logSelf(ctx context.Context, logger *slog.Logger, fetch func() (*discord.User, error)) {
 	self, err := fetch()
 	if err != nil {
-		logger.WarnContext(ctx, "could not fetch the bot user", slog.Any("err", err))
+		logger.WarnContext(ctx, "could not fetch the bot user", slog.Any("error", err))
 		return
 	}
 	logger.InfoContext(ctx, "connected", slog.String("username", self.Username), slog.Any("id", self.ID))
@@ -262,14 +262,14 @@ func registerCommands(ctx context.Context, client *disgobot.Client, guildID snow
 	if reset {
 		logger.InfoContext(ctx, "resetting all commands")
 		if _, err := client.Rest.SetGuildCommands(client.ApplicationID, guildID, nil); err != nil {
-			logger.ErrorContext(ctx, "could not clear guild commands", slog.Any("err", err))
+			logger.ErrorContext(ctx, "could not clear guild commands", slog.Any("error", err))
 		}
 		if _, err := client.Rest.SetGlobalCommands(client.ApplicationID, nil); err != nil {
-			logger.ErrorContext(ctx, "could not clear global commands", slog.Any("err", err))
+			logger.ErrorContext(ctx, "could not clear global commands", slog.Any("error", err))
 		}
 	}
 
 	if err := handler.SyncCommands(client, music.Commands, []snowflake.ID{guildID}); err != nil {
-		logger.ErrorContext(ctx, "could not register commands", slog.Any("err", err))
+		logger.ErrorContext(ctx, "could not register commands", slog.Any("error", err))
 	}
 }

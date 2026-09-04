@@ -346,6 +346,20 @@ func TestOnTrackStartCancelsTheIdleCountdown(t *testing.T) {
 	require.Nil(t, s.emptyTimer)
 }
 
+func TestOnTrackStartLogsTheTitleAsAnAttribute(t *testing.T) {
+	t.Parallel()
+
+	logger, captured := newCapturingLogger(slog.LevelDebug)
+	e := newTestEvents(t, newTestService(t, nil, nil), &fakeForwarder{}, logger)
+
+	e.handleTrackStart(testGuildID, "a track")
+
+	records := captured.records(t)
+	require.Len(t, records, 1)
+	require.Equal(t, "track started", records[0]["msg"], "the message stays static so the event groups")
+	require.Equal(t, "a track", records[0]["track_title"])
+}
+
 func TestOnTrackStartFromAnotherGuildIsIgnored(t *testing.T) {
 	t.Parallel()
 
@@ -375,6 +389,34 @@ func TestOnTrackEndReasonsThatForbidAdvancing(t *testing.T) {
 			require.Equal(t, 1, s.queue.Len())
 		})
 	}
+}
+
+// TestTerminalWebSocketClosesShareOneMessage pins the message static: the cause
+// used to be concatenated into it, which split one event across five messages.
+func TestTerminalWebSocketClosesShareOneMessage(t *testing.T) {
+	t.Parallel()
+
+	logOnce := func(code int) map[string]any {
+		logger, captured := newCapturingLogger(slog.LevelDebug)
+		e := newTestEvents(t, newTestService(t, nil, nil), &fakeForwarder{}, logger)
+
+		e.logWebSocketClosed(testGuildID, code, "because", true)
+
+		records := captured.records(t)
+		require.Len(t, records, 1)
+		return records[0]
+	}
+
+	authFailed, notFound := logOnce(4004), logOnce(4011)
+
+	require.Equal(t, authFailed["msg"], notFound["msg"], "both terminal closes are one event")
+	require.NotEqual(t, authFailed["cause"], notFound["cause"], "the cause is what tells them apart")
+	require.NotEmpty(t, authFailed["cause"])
+	require.NotContains(t, authFailed["msg"], authFailed["cause"], "the cause belongs in the attribute, not the message")
+
+	retryable := logOnce(4009)
+	require.NotEqual(t, authFailed["msg"], retryable["msg"], "a retryable close is its own event")
+	require.NotContains(t, retryable, "cause", "only a terminal close has a cause")
 }
 
 func TestWebSocketCloseLogging(t *testing.T) {

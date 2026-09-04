@@ -153,11 +153,11 @@ func (s *Service) leaveIdle(ctx context.Context, reason string) {
 
 	if player := s.lavalink.ExistingPlayer(s.guildID); player != nil {
 		if err := player.Update(ctx, lavalink.WithNullTrack()); err != nil {
-			s.logger.ErrorContext(ctx, "could not stop the player", slog.Any("err", err))
+			s.logger.ErrorContext(ctx, "could not stop the player", slog.Any("error", err))
 		}
 	}
 	if err := s.Leave(ctx); err != nil {
-		s.logger.ErrorContext(ctx, "could not leave the voice channel", slog.Any("err", err))
+		s.logger.ErrorContext(ctx, "could not leave the voice channel", slog.Any("error", err))
 	}
 }
 

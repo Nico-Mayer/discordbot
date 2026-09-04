@@ -56,6 +56,8 @@ The two idle countdowns are optional. `IDLE_ALONE_SECONDS` and `IDLE_EMPTY_QUEUE
 
 Configuration errors SHALL be reported together and MUST prevent the bot from starting. The process MUST exit with a non-zero status. A value that cannot be interpreted MUST be an error rather than silently falling back to a default.
 
+The failure SHALL be reported as a structured log record, in the same format as every other record the bot writes, rather than printed directly to standard error.
+
 #### Scenario: Required variable missing
 
 - **WHEN** a required variable is empty or unset
@@ -87,6 +89,12 @@ Configuration errors SHALL be reported together and MUST prevent the bot from st
 
 - **WHEN** a configuration error is reported
 - **THEN** the message MUST NOT include the value of the token or the Lavalink password
+
+#### Scenario: The failure is written as a log record
+
+- **WHEN** configuration loading fails, or startup fails for any other reason
+- **THEN** the failure MUST be emitted through the structured logger at `error` level
+- **AND** it MUST NOT be printed to standard error outside the logger
 
 ### Requirement: Slash commands are registered at startup
 

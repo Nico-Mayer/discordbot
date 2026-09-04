@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -19,6 +18,8 @@ func main() {
 	resetCommands := flag.Bool("reset-commands", false, "clear all registered guild and global commands before registering the current set")
 	flag.Parse()
 
+	// The logger is built before anything can fail, so a configuration failure is
+	// reported as a record like every other event rather than printed raw.
 	handler := log.New(os.Stderr)
 	handler.SetReportTimestamp(true)
 	logger := slog.New(handler)
@@ -28,12 +29,12 @@ func main() {
 
 	cfg, err := config.Load()
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "invalid configuration:", err)
+		logger.ErrorContext(ctx, "invalid configuration", slog.Any("error", err))
 		os.Exit(1)
 	}
 
 	if err := app.Run(ctx, cfg, logger, app.Options{ResetCommands: *resetCommands}); err != nil {
-		fmt.Fprintln(os.Stderr, "bot failed:", err)
+		logger.ErrorContext(ctx, "bot failed", slog.Any("error", err))
 		os.Exit(1)
 	}
 }

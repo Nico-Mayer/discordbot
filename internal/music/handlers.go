@@ -48,7 +48,7 @@ type commands struct {
 }
 
 func (c *commands) play(data discord.SlashCommandInteractionData, e *handler.CommandEvent) error {
-	req := PlayRequest{Identifier: data.String("identifier")}
+	req := PlayRequest{Identifier: data.String(optionPlayName)}
 	if state, ok := e.Client().Caches.VoiceState(c.service.GuildID(), e.User().ID); ok {
 		req.VoiceChannelID = state.ChannelID
 	}
@@ -74,23 +74,23 @@ func (c *commands) pause(_ discord.SlashCommandInteractionData, e *handler.Comma
 		return err
 	}
 	if paused {
-		return reply(e, infoEmbed("⏸️ Wiedergabe pausiert"))
+		return reply(e, pausedEmbed())
 	}
-	return reply(e, infoEmbed("▶️ Wiedergabe fortgesetzt"))
+	return reply(e, resumedEmbed())
 }
 
 func (c *commands) stop(_ discord.SlashCommandInteractionData, e *handler.CommandEvent) error {
 	if err := c.service.Stop(e.Ctx); err != nil {
 		return err
 	}
-	return reply(e, successEmbed("Wiedergabe gestoppt und Warteschlange geleert"))
+	return reply(e, stoppedEmbed())
 }
 
 func (c *commands) skip(_ discord.SlashCommandInteractionData, e *handler.CommandEvent) error {
 	if _, err := c.service.Skip(e.Ctx); err != nil {
 		return err
 	}
-	return reply(e, successEmbed("Titel übersprungen ⏭️"))
+	return reply(e, skippedEmbed())
 }
 
 func (c *commands) nowPlaying(_ discord.SlashCommandInteractionData, e *handler.CommandEvent) error {
@@ -123,8 +123,8 @@ func logCommand(logger *slog.Logger) handler.Middleware {
 		return func(e *handler.InteractionEvent) error {
 			logger.InfoContext(e.Ctx, "handling command",
 				slog.String("command", commandName(e)),
-				slog.Any("guild", e.GuildID()),
-				slog.Any("user", e.User().ID),
+				slog.Any("guild_id", e.GuildID()),
+				slog.Any("user_id", e.User().ID),
 			)
 			return next(e)
 		}
@@ -148,7 +148,7 @@ func guardGuild(configured snowflake.ID, logger *slog.Logger) handler.Middleware
 		return func(e *handler.InteractionEvent) error {
 			if err := checkGuild(configured, e.GuildID()); err != nil {
 				logger.WarnContext(e.Ctx, "refusing command from an unconfigured guild",
-					slog.Any("guild", e.GuildID()),
+					slog.Any("guild_id", e.GuildID()),
 					slog.String("command", commandName(e)),
 				)
 				return err
@@ -174,15 +174,15 @@ func handleError(logger *slog.Logger) handler.ErrorHandler {
 		name := commandName(e)
 
 		if known {
-			logger.InfoContext(e.Ctx, "command failed", slog.String("command", name), slog.Any("err", err))
+			logger.InfoContext(e.Ctx, "command failed", slog.String("command", name), slog.Any("error", err))
 		} else {
-			logger.ErrorContext(e.Ctx, "command failed", slog.String("command", name), slog.Any("err", err))
+			logger.ErrorContext(e.Ctx, "command failed", slog.String("command", name), slog.Any("error", err))
 		}
 
 		if replyErr := replyError(e, e.Vars[varDeferred] == "true", msg); replyErr != nil {
 			logger.ErrorContext(e.Ctx, "could not report the failure to the caller",
 				slog.String("command", name),
-				slog.Any("err", replyErr),
+				slog.Any("error", replyErr),
 			)
 		}
 	}

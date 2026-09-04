@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgolink/v3/lavalink"
 	"github.com/stretchr/testify/require"
 )
@@ -35,6 +36,29 @@ func testTrackWithoutArtwork(title string) lavalink.Track {
 	track := testTrack(title)
 	track.Info.ArtworkURL = nil
 	return track
+}
+
+// allIcons is every status icon a reply can carry. No icon is a substring of
+// another, so counting occurrences counts icons.
+var allIcons = []string{
+	iconError, iconSuccess, iconInfo,
+	iconPaused, iconPlaying, iconStopped, iconSkipped,
+	iconQueue, iconMusicNote,
+}
+
+func countIcons(s string) int {
+	var n int
+	for _, icon := range allIcons {
+		n += strings.Count(s, icon)
+	}
+	return n
+}
+
+func stripIcons(s string) string {
+	for _, icon := range allIcons {
+		s = strings.ReplaceAll(s, icon, "")
+	}
+	return strings.TrimSpace(s)
 }
 
 func TestFormatDuration(t *testing.T) {
@@ -96,6 +120,15 @@ func FuzzFormatDuration(f *testing.F) {
 	})
 }
 
+func TestStatusEmbedLeadsWithTheIcon(t *testing.T) {
+	t.Parallel()
+
+	embed := statusEmbed(iconSkipped, colorSuccess, "erledigt")
+	require.True(t, strings.HasPrefix(embed.Description, iconSkipped), "the icon must lead the text")
+	require.Equal(t, colorSuccess, embed.Color)
+	require.Equal(t, 1, countIcons(embed.Description))
+}
+
 func TestErrorEmbed(t *testing.T) {
 	t.Parallel()
 
@@ -119,6 +152,46 @@ func TestInfoEmbed(t *testing.T) {
 	embed := infoEmbed("hinweis")
 	require.Equal(t, colorInfo, embed.Color)
 	require.Contains(t, embed.Description, "hinweis")
+}
+
+func TestSkipReplyLeadsWithItsIcon(t *testing.T) {
+	t.Parallel()
+
+	embed := skippedEmbed()
+	require.True(t, strings.HasPrefix(embed.Description, iconSkipped), "the icon must lead, not trail")
+	require.Equal(t, 1, countIcons(embed.Description))
+}
+
+// TestRepliesStateTheirOutcomeWithoutTheirIcon strips the icons from every
+// confirmation and checks the remaining text still says what happened, so a
+// reply reads correctly where the icon does not render.
+func TestRepliesStateTheirOutcomeWithoutTheirIcon(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		embed    discord.Embed
+		wantText string
+		wantWord string
+	}{
+		{name: "pause", embed: pausedEmbed(), wantText: replyPaused, wantWord: "pausiert"},
+		{name: "resume", embed: resumedEmbed(), wantText: replyResumed, wantWord: "fortgesetzt"},
+		{name: "stop", embed: stoppedEmbed(), wantText: replyStopped, wantWord: "gestoppt"},
+		{name: "skip", embed: skippedEmbed(), wantText: replySkipped, wantWord: "übersprungen"},
+		{name: "empty queue", embed: queueEmbed(nil), wantText: replyQueueEmpty, wantWord: "leer"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			require.Equal(t, 1, countIcons(tt.embed.Title)+countIcons(tt.embed.Description), "a reply carries exactly one icon")
+
+			text := stripIcons(tt.embed.Description)
+			require.Equal(t, tt.wantText, text, "the copy itself must carry no icon")
+			require.Contains(t, text, tt.wantWord, "the text alone must name the outcome")
+		})
+	}
 }
 
 func TestNowPlayingEmbed(t *testing.T) {
@@ -149,8 +222,11 @@ func TestTrackEmbed(t *testing.T) {
 	require.NotNil(t, embed.Image)
 	require.Equal(t, "https://example.com/art/song", embed.Image.URL)
 
+	require.NotNil(t, embed.Author, "the author line is what states the outcome")
+	require.Equal(t, "▶️ Läuft jetzt", embed.Author.Name)
+
 	require.Len(t, embed.Fields, 1)
-	require.NotEmpty(t, embed.Fields[0].Name, "duration field must have a name")
+	require.Equal(t, "Dauer", embed.Fields[0].Name, "the field name carries no icon")
 	require.NotEmpty(t, embed.Fields[0].Value, "duration field must have a value")
 	require.Equal(t, "3:07", embed.Fields[0].Value)
 }
@@ -178,6 +254,10 @@ func TestQueueEmbedEmpty(t *testing.T) {
 	require.Equal(t, colorInfo, embed.Color)
 	require.Contains(t, embed.Description, "leer")
 	require.Nil(t, embed.Footer)
+
+	require.Empty(t, embed.Title, "the empty reply has no title to carry a second icon")
+	require.Equal(t, 1, countIcons(embed.Description), "the empty reply rendered two icons before")
+	require.True(t, strings.HasPrefix(embed.Description, iconQueue))
 }
 
 func TestQueueEmbedListsTracks(t *testing.T) {
@@ -236,10 +316,72 @@ func TestQueueEmbedIsBounded(t *testing.T) {
 			listed := strings.Count(embed.Description, "`") / 2
 			if tt.wantListed > 0 {
 				require.Equal(t, tt.wantListed, listed)
-				require.Contains(t, embed.Description, fmt.Sprintf("… und %d weitere", tt.wantResidual))
+				require.Contains(t, embed.Description, lineQueueResidual(tt.wantResidual))
 			} else {
 				require.Contains(t, embed.Description, "weitere")
 			}
+		})
+	}
+}
+
+func TestQueueEmbedResidualLineAgreesInNumber(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name   string
+		tracks int
+		want   string
+	}{
+		{name: "one remaining", tracks: queueListLimit + 1, want: "… und 1 weiterer Titel"},
+		{name: "two remaining", tracks: queueListLimit + 2, want: "… und 2 weitere Titel"},
+		{name: "many remaining", tracks: 200, want: fmt.Sprintf("… und %d weitere Titel", 200-queueListLimit)},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			tracks := make([]lavalink.Track, 0, tt.tracks)
+			for i := range tt.tracks {
+				tracks = append(tracks, testTrack(fmt.Sprintf("track-%03d", i)))
+			}
+
+			require.Contains(t, queueEmbed(tracks).Description, tt.want)
+		})
+	}
+}
+
+// TestEveryEmbedCarriesExactlyOneIcon counts across the title, author line,
+// description and footer, because the empty-queue reply used to render one in
+// the description on top of the one errorEmbed had already prepended.
+func TestEveryEmbedCarriesExactlyOneIcon(t *testing.T) {
+	t.Parallel()
+
+	track := testTrack("song")
+	tests := []struct {
+		name  string
+		embed discord.Embed
+	}{
+		{name: "play started", embed: trackEmbed(track)},
+		{name: "play queued", embed: queuedEmbed(track, 2)},
+		{name: "now playing", embed: nowPlayingEmbed(track, 0)},
+		{name: "queue listing", embed: queueEmbed([]lavalink.Track{track})},
+		{name: "queue empty", embed: queueEmbed(nil)},
+		{name: "error", embed: errorEmbed(msgGeneric)},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			total := countIcons(tt.embed.Title) + countIcons(tt.embed.Description)
+			if tt.embed.Author != nil {
+				total += countIcons(tt.embed.Author.Name)
+			}
+			if tt.embed.Footer != nil {
+				total += countIcons(tt.embed.Footer.Text)
+			}
+			require.Equal(t, 1, total)
 		})
 	}
 }

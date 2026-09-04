@@ -64,7 +64,7 @@ func (e *Events) OnVoiceStateUpdate(event *events.GuildVoiceStateUpdate) {
 
 func (e *Events) handleVoiceStateUpdate(guildID snowflake.ID, userID snowflake.ID, channelID *snowflake.ID, sessionID string) {
 	if guildID != e.service.GuildID() {
-		e.logger.DebugContext(e.ctx, "ignoring voice state update from an unconfigured guild", slog.Any("guild", guildID))
+		e.logger.DebugContext(e.ctx, "ignoring voice state update from an unconfigured guild", slog.Any("guild_id", guildID))
 		return
 	}
 
@@ -84,7 +84,7 @@ func (e *Events) handleVoiceStateUpdate(guildID snowflake.ID, userID snowflake.I
 
 func (e *Events) OnVoiceServerUpdate(event *events.VoiceServerUpdate) {
 	if event.Endpoint == nil {
-		e.logger.DebugContext(e.ctx, "voice server update carried no endpoint", slog.Any("guild", event.GuildID))
+		e.logger.DebugContext(e.ctx, "voice server update carried no endpoint", slog.Any("guild_id", event.GuildID))
 		return
 	}
 	e.handleVoiceServerUpdate(event.GuildID, event.Token, *event.Endpoint)
@@ -92,7 +92,7 @@ func (e *Events) OnVoiceServerUpdate(event *events.VoiceServerUpdate) {
 
 func (e *Events) handleVoiceServerUpdate(guildID snowflake.ID, token string, endpoint string) {
 	if guildID != e.service.GuildID() {
-		e.logger.DebugContext(e.ctx, "ignoring voice server update from an unconfigured guild", slog.Any("guild", guildID))
+		e.logger.DebugContext(e.ctx, "ignoring voice server update from an unconfigured guild", slog.Any("guild_id", guildID))
 		return
 	}
 	e.voice.OnVoiceServerUpdate(e.ctx, guildID, token, endpoint)
@@ -101,11 +101,11 @@ func (e *Events) handleVoiceServerUpdate(guildID snowflake.ID, token string, end
 // Lavalink player events
 
 func (e *Events) OnPlayerPause(_ disgolink.Player, event lavalink.PlayerPauseEvent) {
-	e.logger.InfoContext(e.ctx, "player paused", slog.Any("guild", event.GuildID()))
+	e.logger.InfoContext(e.ctx, "player paused", slog.Any("guild_id", event.GuildID()))
 }
 
 func (e *Events) OnPlayerResume(_ disgolink.Player, event lavalink.PlayerResumeEvent) {
-	e.logger.InfoContext(e.ctx, "player resumed", slog.Any("guild", event.GuildID()))
+	e.logger.InfoContext(e.ctx, "player resumed", slog.Any("guild_id", event.GuildID()))
 }
 
 func (e *Events) OnTrackStart(_ disgolink.Player, event lavalink.TrackStartEvent) {
@@ -114,11 +114,11 @@ func (e *Events) OnTrackStart(_ disgolink.Player, event lavalink.TrackStartEvent
 
 func (e *Events) handleTrackStart(guildID snowflake.ID, title string) {
 	if guildID != e.service.GuildID() {
-		e.logger.DebugContext(e.ctx, "ignoring track start from an unconfigured guild", slog.Any("guild", guildID))
+		e.logger.DebugContext(e.ctx, "ignoring track start from an unconfigured guild", slog.Any("guild_id", guildID))
 		return
 	}
 
-	e.logger.InfoContext(e.ctx, "track started", slog.String("title", title))
+	e.logger.InfoContext(e.ctx, "track started", slog.String("track_title", title))
 	e.service.CancelEmptyQueue()
 }
 
@@ -128,7 +128,7 @@ func (e *Events) OnTrackEnd(player disgolink.Player, event lavalink.TrackEndEven
 
 func (e *Events) handleTrackEnd(player Player, guildID snowflake.ID, reason lavalink.TrackEndReason) {
 	if guildID != e.service.GuildID() {
-		e.logger.DebugContext(e.ctx, "ignoring track end from an unconfigured guild", slog.Any("guild", guildID))
+		e.logger.DebugContext(e.ctx, "ignoring track end from an unconfigured guild", slog.Any("guild_id", guildID))
 		return
 	}
 	if !reason.MayStartNext() {
@@ -138,7 +138,7 @@ func (e *Events) handleTrackEnd(player Player, guildID snowflake.ID, reason lava
 
 	advanced, err := e.service.Advance(e.ctx, player)
 	if err != nil {
-		e.logger.ErrorContext(e.ctx, "could not play the next track", slog.Any("err", err))
+		e.logger.ErrorContext(e.ctx, "could not play the next track", slog.Any("error", err))
 		return
 	}
 	if advanced {
@@ -150,16 +150,16 @@ func (e *Events) handleTrackEnd(player Player, guildID snowflake.ID, reason lava
 
 func (e *Events) OnTrackException(_ disgolink.Player, event lavalink.TrackExceptionEvent) {
 	e.logger.ErrorContext(e.ctx, "track exception",
-		slog.Any("guild", event.GuildID()),
-		slog.String("track", event.Track.Info.Title),
-		slog.Any("err", event.Exception),
+		slog.Any("guild_id", event.GuildID()),
+		slog.String("track_title", event.Track.Info.Title),
+		slog.Any("error", event.Exception),
 	)
 }
 
 func (e *Events) OnTrackStuck(_ disgolink.Player, event lavalink.TrackStuckEvent) {
 	e.logger.WarnContext(e.ctx, "track stuck",
-		slog.Any("guild", event.GuildID()),
-		slog.String("track", event.Track.Info.Title),
+		slog.Any("guild_id", event.GuildID()),
+		slog.String("track_title", event.Track.Info.Title),
 	)
 }
 
@@ -169,14 +169,16 @@ func (e *Events) OnWebSocketClosed(_ disgolink.Player, event lavalink.WebSocketC
 
 func (e *Events) logWebSocketClosed(guildID snowflake.ID, code int, reason string, byRemote bool) {
 	attrs := []any{
-		slog.Any("guild", guildID),
+		slog.Any("guild_id", guildID),
 		slog.Int("code", code),
 		slog.String("reason", reason),
 		slog.Bool("by_remote", byRemote),
 	}
 
+	// The cause is an attribute rather than part of the message, so every
+	// terminal close groups as one event however it was caused.
 	if cause, terminal := terminalCloseCodes[code]; terminal {
-		e.logger.ErrorContext(e.ctx, "lavalink websocket closed for good: "+cause, attrs...)
+		e.logger.ErrorContext(e.ctx, "lavalink websocket closed for good", append(attrs, slog.String("cause", cause))...)
 		return
 	}
 	e.logger.WarnContext(e.ctx, "lavalink websocket closed, will be retried", attrs...)

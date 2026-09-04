@@ -24,33 +24,53 @@ const (
 	queueListLimit = 20
 )
 
+// The status icons. They live here rather than with the copy, so a reply takes
+// its icon as a parameter and cannot end up carrying two.
+const (
+	iconError     = "❌"
+	iconSuccess   = "✅"
+	iconInfo      = "ℹ️"
+	iconPaused    = "⏸️"
+	iconPlaying   = "▶️"
+	iconStopped   = "⏹️"
+	iconSkipped   = "⏭️"
+	iconQueue     = "📋"
+	iconMusicNote = "🎶"
+)
+
 // iconPad separates the leading status icon from the message text.
 const iconPad = "     "
 
-func errorEmbed(msg string) discord.Embed {
+// statusEmbed is the shape every one-line reply takes: the icon leads, the text
+// follows, and the text itself never carries one.
+func statusEmbed(icon string, color int, text string) discord.Embed {
 	return discord.Embed{
-		Description: "❌" + iconPad + msg,
-		Color:       colorError,
+		Description: icon + iconPad + text,
+		Color:       color,
 	}
+}
+
+func errorEmbed(msg string) discord.Embed {
+	return statusEmbed(iconError, colorError, msg)
 }
 
 func successEmbed(msg string) discord.Embed {
-	return discord.Embed{
-		Description: "✅" + iconPad + msg,
-		Color:       colorSuccess,
-	}
+	return statusEmbed(iconSuccess, colorSuccess, msg)
 }
 
 func infoEmbed(msg string) discord.Embed {
-	return discord.Embed{
-		Description: "ℹ️" + iconPad + msg,
-		Color:       colorInfo,
-	}
+	return statusEmbed(iconInfo, colorInfo, msg)
 }
+
+// The confirmations. Each names its own icon, so /skip no longer trails one.
+func pausedEmbed() discord.Embed  { return statusEmbed(iconPaused, colorInfo, replyPaused) }
+func resumedEmbed() discord.Embed { return statusEmbed(iconPlaying, colorInfo, replyResumed) }
+func stoppedEmbed() discord.Embed { return statusEmbed(iconStopped, colorSuccess, replyStopped) }
+func skippedEmbed() discord.Embed { return statusEmbed(iconSkipped, colorSuccess, replySkipped) }
 
 func nowPlayingEmbed(track lavalink.Track, position lavalink.Duration) discord.Embed {
 	return discord.Embed{
-		Title:       "🎶 Läuft gerade",
+		Title:       iconMusicNote + " " + titleNowPlaying,
 		Description: fmt.Sprintf("%s\nvon **%s**", trackLink(track), track.Info.Author),
 		Color:       colorInfo,
 		Thumbnail:   &discord.EmbedResource{URL: artworkURL(track)},
@@ -63,12 +83,14 @@ func nowPlayingEmbed(track lavalink.Track, position lavalink.Duration) discord.E
 // trackEmbed confirms that a track started playing immediately.
 func trackEmbed(track lavalink.Track) discord.Embed {
 	embed := discord.Embed{
+		// The author line is what states the outcome; the title is the track.
+		Author:      &discord.EmbedAuthor{Name: iconPlaying + " " + authorNowPlaying},
 		Title:       track.Info.Title,
 		Description: fmt.Sprintf("von **%s**", track.Info.Author),
 		Color:       colorSuccess,
 		Image:       &discord.EmbedResource{URL: artworkURL(track)},
 		Fields: []discord.EmbedField{
-			{Name: "⏱️ Dauer", Value: formatDuration(track.Info.Length), Inline: new(true)},
+			{Name: fieldDuration, Value: formatDuration(track.Info.Length), Inline: new(true)},
 		},
 	}
 	if track.Info.URI != nil {
@@ -80,13 +102,13 @@ func trackEmbed(track lavalink.Track) discord.Embed {
 // queuedEmbed confirms that a track was appended to the queue at position.
 func queuedEmbed(track lavalink.Track, position int) discord.Embed {
 	return discord.Embed{
-		Title:       "📋 Zur Warteschlange hinzugefügt",
+		Title:       iconQueue + " " + titleQueued,
 		Description: fmt.Sprintf("%s\nvon **%s**", trackLink(track), track.Info.Author),
 		Color:       colorInfo,
 		Thumbnail:   &discord.EmbedResource{URL: artworkURL(track)},
 		Fields: []discord.EmbedField{
-			{Name: "Position", Value: fmt.Sprintf("#%d", position), Inline: new(true)},
-			{Name: "Dauer", Value: formatDuration(track.Info.Length), Inline: new(true)},
+			{Name: fieldPosition, Value: fmt.Sprintf("#%d", position), Inline: new(true)},
+			{Name: fieldDuration, Value: formatDuration(track.Info.Length), Inline: new(true)},
 		},
 	}
 }
@@ -95,7 +117,7 @@ func queuedEmbed(track lavalink.Track, position int) discord.Embed {
 // long queue cannot breach the embed description limit and fail the interaction.
 func queueEmbed(tracks []lavalink.Track) discord.Embed {
 	if len(tracks) == 0 {
-		return infoEmbed("📋 Die Warteschlange ist leer")
+		return statusEmbed(iconQueue, colorInfo, replyQueueEmpty)
 	}
 
 	var b strings.Builder
@@ -110,15 +132,15 @@ func queueEmbed(tracks []lavalink.Track) discord.Embed {
 	}
 
 	if remaining := len(tracks) - listed; remaining > 0 {
-		fmt.Fprintf(&b, "\n… und %d weitere", remaining)
+		fmt.Fprintf(&b, "\n%s", lineQueueResidual(remaining))
 	}
 
 	return discord.Embed{
-		Title:       "📋 Warteschlange",
+		Title:       iconQueue + " " + titleQueue,
 		Description: truncate(b.String(), embedDescriptionLimit),
 		Color:       colorInfo,
 		Footer: &discord.EmbedFooter{
-			Text: fmt.Sprintf("%d Titel in der Warteschlange", len(tracks)),
+			Text: footerQueueCount(len(tracks)),
 		},
 	}
 }

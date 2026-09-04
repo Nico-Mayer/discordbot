@@ -101,26 +101,26 @@ func TestReplyErrorSendsAnEphemeralMessage(t *testing.T) {
 	t.Parallel()
 
 	replier := &fakeReplier{}
-	require.NoError(t, replyError(replier, false, "Kein Player gefunden"))
+	require.NoError(t, replyError(replier, false, msgNothingPlaying))
 
 	require.Len(t, replier.created, 1)
 	require.Empty(t, replier.updated)
 	require.Equal(t, discord.MessageFlagEphemeral, replier.created[0].Flags)
 	require.Len(t, replier.created[0].Embeds, 1)
 	require.Equal(t, colorError, replier.created[0].Embeds[0].Color)
-	require.Contains(t, replier.created[0].Embeds[0].Description, "Kein Player gefunden")
+	require.Contains(t, replier.created[0].Embeds[0].Description, msgNothingPlaying)
 }
 
 func TestReplyErrorEditsADeferredAcknowledgement(t *testing.T) {
 	t.Parallel()
 
 	replier := &fakeReplier{}
-	require.NoError(t, replyError(replier, true, "Nichts gefunden"))
+	require.NoError(t, replyError(replier, true, msgNoResults))
 
 	require.Empty(t, replier.created, "a deferred interaction must not get a second message")
 	require.Len(t, replier.updated, 1)
 	require.NotNil(t, replier.updated[0].Embeds)
-	require.Contains(t, (*replier.updated[0].Embeds)[0].Description, "Nichts gefunden")
+	require.Contains(t, (*replier.updated[0].Embeds)[0].Description, msgNoResults)
 }
 
 func TestReplyErrorWrapsSendFailures(t *testing.T) {
@@ -141,12 +141,12 @@ func TestErrorRepliesUseTheSentinelMessageTable(t *testing.T) {
 		err  error
 		want string
 	}{
-		{name: "no player", err: ErrNoPlayer, want: "Kein Player gefunden"},
-		{name: "not in voice", err: ErrNotInVoice, want: "Du musst in einem Sprachkanal sein!"},
-		{name: "nothing playing", err: ErrNothingPlaying, want: "Es wird gerade nichts abgespielt"},
-		{name: "queue empty", err: ErrQueueEmpty, want: "Keine weiteren Titel in der Warteschlange"},
-		{name: "no results", err: ErrNoResults, want: "Nichts gefunden"},
-		{name: "foreign guild", err: ErrForeignGuild, want: "Dieser Bot ist für diesen Server nicht freigeschaltet"},
+		{name: "no player", err: ErrNoPlayer, want: msgNothingPlaying},
+		{name: "not in voice", err: ErrNotInVoice, want: msgNotInVoice},
+		{name: "nothing playing", err: ErrNothingPlaying, want: msgNothingPlaying},
+		{name: "queue empty", err: ErrQueueEmpty, want: msgQueueEmpty},
+		{name: "no results", err: ErrNoResults, want: msgNoResults},
+		{name: "foreign guild", err: ErrForeignGuild, want: msgForeignGuild},
 		{name: "unknown error falls back", err: errors.New("boom"), want: GenericErrorMessage},
 	}
 
@@ -181,9 +181,9 @@ func TestUnknownErrorsAreLoggedAtErrorLevel(t *testing.T) {
 			logger, captured := newCapturingLogger(slog.LevelDebug)
 			_, known := UserMessage(tt.err)
 			if known {
-				logger.Info("command failed", slog.Any("err", tt.err))
+				logger.Info("command failed", slog.Any("error", tt.err))
 			} else {
-				logger.Error("command failed", slog.Any("err", tt.err))
+				logger.Error("command failed", slog.Any("error", tt.err))
 			}
 
 			records := captured.records(t)

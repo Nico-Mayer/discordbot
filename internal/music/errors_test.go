@@ -3,6 +3,7 @@ package music
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -36,15 +37,15 @@ func TestUserMessage(t *testing.T) {
 		wantMsg   string
 		contains  string
 	}{
-		{name: "no player", err: ErrNoPlayer, wantKnown: true, wantMsg: "Kein Player gefunden"},
-		{name: "not in voice", err: ErrNotInVoice, wantKnown: true, wantMsg: "Du musst in einem Sprachkanal sein!"},
-		{name: "nothing playing", err: ErrNothingPlaying, wantKnown: true, wantMsg: "Es wird gerade nichts abgespielt"},
-		{name: "queue empty", err: ErrQueueEmpty, wantKnown: true, wantMsg: "Keine weiteren Titel in der Warteschlange"},
-		{name: "no results", err: ErrNoResults, wantKnown: true, wantMsg: "Nichts gefunden"},
-		{name: "foreign guild", err: ErrForeignGuild, wantKnown: true, wantMsg: "Dieser Bot ist für diesen Server nicht freigeschaltet"},
-		{name: "wrapped sentinel", err: fmt.Errorf("update player: %w", ErrNoPlayer), wantKnown: true, wantMsg: "Kein Player gefunden"},
+		{name: "no player", err: ErrNoPlayer, wantKnown: true, wantMsg: msgNothingPlaying},
+		{name: "not in voice", err: ErrNotInVoice, wantKnown: true, wantMsg: msgNotInVoice},
+		{name: "nothing playing", err: ErrNothingPlaying, wantKnown: true, wantMsg: msgNothingPlaying},
+		{name: "queue empty", err: ErrQueueEmpty, wantKnown: true, wantMsg: msgQueueEmpty},
+		{name: "no results", err: ErrNoResults, wantKnown: true, wantMsg: msgNoResults},
+		{name: "foreign guild", err: ErrForeignGuild, wantKnown: true, wantMsg: msgForeignGuild},
+		{name: "wrapped sentinel", err: fmt.Errorf("update player: %w", ErrNoPlayer), wantKnown: true, wantMsg: msgNothingPlaying},
 		{name: "no results names the identifier", err: &NoResultsError{Identifier: "never gonna give you up"}, wantKnown: true, contains: "never gonna give you up"},
-		{name: "load error describes the failure", err: &LoadError{Identifier: "x", Err: errors.New("node unreachable")}, wantKnown: true, contains: "node unreachable"},
+		{name: "load error names no upstream detail", err: &LoadError{Identifier: "x", Err: errors.New("node unreachable")}, wantKnown: true, wantMsg: msgLoadFailed},
 		{name: "unknown error", err: errors.New("boom"), wantKnown: false, wantMsg: GenericErrorMessage},
 		{name: "nil error", err: nil, wantKnown: false, wantMsg: GenericErrorMessage},
 	}
@@ -65,6 +66,29 @@ func TestUserMessage(t *testing.T) {
 	}
 }
 
+func TestNoResultsErrorBoundsTheQuotedIdentifier(t *testing.T) {
+	t.Parallel()
+
+	// 6000 is the longest value Discord accepts for a string option, so this is
+	// the worst case the reply has to survive.
+	err := &NoResultsError{Identifier: strings.Repeat("x", 6000)}
+	description := errorEmbed(err.UserMessage()).Description
+
+	require.Less(t, len(description), embedDescriptionLimit, "the reply reporting the failure must itself send")
+	require.Contains(t, description, "\u2026`", "the quoted value ends with a visible truncation marker")
+	require.Contains(t, description, "Pr\u00fcfe den Link", "truncating the input leaves the advice intact")
+}
+
+func TestNoResultsErrorQuotesAShortIdentifierUnchanged(t *testing.T) {
+	t.Parallel()
+
+	err := &NoResultsError{Identifier: "never gonna give you up"}
+	msg := err.UserMessage()
+
+	require.Contains(t, msg, "`never gonna give you up`")
+	require.NotContains(t, msg, "\u2026", "a value that fits is not marked as shortened")
+}
+
 func TestNoResultsErrorUnwrapsToSentinel(t *testing.T) {
 	t.Parallel()
 
@@ -78,4 +102,16 @@ func TestLoadErrorUnwrapsToCause(t *testing.T) {
 	cause := errors.New("timeout")
 	err := fmt.Errorf("enqueue: %w", &LoadError{Identifier: "x", Err: cause})
 	require.ErrorIs(t, err, cause)
+}
+
+func TestLoadErrorKeepsTheUpstreamTextOutOfTheUserMessage(t *testing.T) {
+	t.Parallel()
+
+	const upstream = "lavalink node unreachable"
+	err := &LoadError{Identifier: "x", Err: errors.New(upstream)}
+
+	require.Contains(t, err.Error(), upstream, "the operator-facing error must carry the detail")
+	for _, word := range strings.Fields(upstream) {
+		require.NotContains(t, err.UserMessage(), word, "the reply must not quote the upstream error")
+	}
 }

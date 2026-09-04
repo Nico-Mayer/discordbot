@@ -62,7 +62,7 @@ func TestLogSelfWarnsWhenTheBotUserCannotBeFetched(t *testing.T) {
 	require.Len(t, got, 1)
 	require.Equal(t, "WARN", got[0]["level"])
 	require.Equal(t, "could not fetch the bot user", got[0]["msg"])
-	require.Contains(t, got[0]["err"], "401 unauthorized")
+	require.Contains(t, got[0]["error"], "401 unauthorized")
 }
 
 func TestLogSelfReportsTheIdentity(t *testing.T) {

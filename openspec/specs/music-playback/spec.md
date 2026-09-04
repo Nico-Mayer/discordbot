@@ -6,14 +6,14 @@ Lets members of one configured Discord guild play audio in a voice channel throu
 
 ### Requirement: Play a track or search query
 
-The `/play` command SHALL accept an `identifier` string that is either a URL or a search query. A value that is not a URL MUST be treated as a YouTube Music search. The bot MUST join the voice channel the requesting member is currently in.
+The `/play` command SHALL accept a `titel` string that is either a URL or a search query. A value that is not a URL MUST be treated as a YouTube Music search. The bot MUST join the voice channel the requesting member is currently in.
 
 Because loading a track can exceed Discord's initial interaction response window, the bot MUST acknowledge the interaction before loading and then edit that acknowledgement with the result.
 
 #### Scenario: Member is not in a voice channel
 
 - **WHEN** a member runs `/play` while not connected to any voice channel in the guild
-- **THEN** the bot MUST reply with an ephemeral error telling them to join a voice channel
+- **THEN** the bot MUST reply with an ephemeral error telling them to join a voice channel first
 - **AND** the bot MUST NOT join a channel, load a track, or modify the queue
 
 #### Scenario: Search query resolves to a track and nothing is playing
@@ -45,11 +45,19 @@ Enqueueing a whole playlist is deliberately out of scope for this capability as 
 
 - **WHEN** the identifier resolves to no tracks
 - **THEN** the bot MUST edit its acknowledgement into an error naming the identifier it searched for
+- **AND** that error MUST suggest what the member can try instead
+
+#### Scenario: Nothing found for a very long value
+
+- **WHEN** the identifier resolves to no tracks and is long enough that quoting it whole would breach the reply size limit
+- **THEN** the bot MUST shorten the quoted identifier with a visible marker
+- **AND** the reply MUST be delivered successfully rather than failing the interaction
 
 #### Scenario: Loading fails
 
 - **WHEN** loading the identifier returns an error
-- **THEN** the bot MUST edit its acknowledgement into an error describing the failure
+- **THEN** the bot MUST edit its acknowledgement into an error stating that the track could not be loaded
+- **AND** that error MUST NOT contain the upstream error text, which MUST instead be logged
 - **AND** the bot MUST NOT join the voice channel or modify the queue
 
 #### Scenario: Loading takes too long
@@ -57,6 +65,12 @@ Enqueueing a whole playlist is deliberately out of scope for this capability as 
 - **WHEN** loading the identifier does not complete within the configured load timeout
 - **THEN** the load MUST be abandoned
 - **AND** the bot MUST edit its acknowledgement into an error rather than leaving the acknowledgement unanswered
+
+#### Scenario: The option is named and described in German
+
+- **WHEN** a member opens the `/play` command in Discord
+- **THEN** the option MUST be presented as `titel` with a German description naming both kinds of accepted value
+- **AND** the previous name `identifier` MUST no longer be accepted
 
 ### Requirement: Pause and resume playback
 
@@ -149,6 +163,7 @@ The `/queue` command SHALL list the tracks waiting to play, in play order, with 
 
 - **WHEN** a member runs `/queue` while the guild queue is empty
 - **THEN** the bot MUST reply that the queue is empty
+- **AND** the reply MUST carry exactly one status icon
 
 #### Scenario: Queue is long enough to breach the reply size limit
 
@@ -253,8 +268,14 @@ A command that fails SHALL leave the caller with a visible error rather than an 
 #### Scenario: Handler returns an unexpected error
 
 - **WHEN** a command handler fails with an unexpected error
-- **THEN** the bot MUST answer the interaction with an ephemeral error message
-- **AND** the failure MUST be logged with the command name
+- **THEN** the bot MUST answer the interaction with an ephemeral error message that tells the caller they can try again
+- **AND** the failure MUST be logged at `error` level with the command name
+
+#### Scenario: Handler fails for a recognised reason
+
+- **WHEN** a command handler fails with a recognised, user-caused reason
+- **THEN** the bot MUST answer the interaction with the German message for that reason
+- **AND** the failure MUST be logged below `error` level, because it needs no operator action
 
 #### Scenario: Unknown command received
 

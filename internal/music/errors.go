@@ -17,18 +17,21 @@ var (
 )
 
 // GenericErrorMessage is shown for any failure that is not one of the sentinels.
-const GenericErrorMessage = "Etwas ist schiefgelaufen"
+const GenericErrorMessage = msgGeneric
 
+// ErrNoPlayer and ErrNothingPlaying stay separate errors because the code
+// distinguishes them, but a caller who hits either one is in the same situation
+// and takes the same action, so they share a message.
 var userMessages = []struct {
 	err     error
 	message string
 }{
-	{ErrNoPlayer, "Kein Player gefunden"},
-	{ErrNotInVoice, "Du musst in einem Sprachkanal sein!"},
-	{ErrNothingPlaying, "Es wird gerade nichts abgespielt"},
-	{ErrQueueEmpty, "Keine weiteren Titel in der Warteschlange"},
-	{ErrNoResults, "Nichts gefunden"},
-	{ErrForeignGuild, "Dieser Bot ist für diesen Server nicht freigeschaltet"},
+	{ErrNoPlayer, msgNothingPlaying},
+	{ErrNotInVoice, msgNotInVoice},
+	{ErrNothingPlaying, msgNothingPlaying},
+	{ErrQueueEmpty, msgQueueEmpty},
+	{ErrNoResults, msgNoResults},
+	{ErrForeignGuild, msgForeignGuild},
 }
 
 // NoResultsError reports that an identifier resolved to nothing, so the reply can
@@ -43,8 +46,11 @@ func (e *NoResultsError) Error() string {
 
 func (e *NoResultsError) Unwrap() error { return ErrNoResults }
 
+// UserMessage bounds the quoted identifier, because /play sets no maximum length
+// and an unbounded quote would push the embed description past what Discord
+// accepts - failing the very reply that reports the failure.
 func (e *NoResultsError) UserMessage() string {
-	return fmt.Sprintf("Nichts gefunden für: `%s`", e.Identifier)
+	return msgNoResultsFor(truncate(e.Identifier, quotedInputLimit))
 }
 
 // LoadError reports that loading an identifier failed at the Lavalink node.
@@ -59,8 +65,10 @@ func (e *LoadError) Error() string {
 
 func (e *LoadError) Unwrap() error { return e.Err }
 
+// UserMessage deliberately drops e.Err: the upstream text is English, is written
+// by Lavalink rather than by the bot, and belongs in the log record instead.
 func (e *LoadError) UserMessage() string {
-	return fmt.Sprintf("Fehler beim Laden: `%s`", e.Err)
+	return msgLoadFailed
 }
 
 // UserMessage translates err into the German message shown to the caller and
