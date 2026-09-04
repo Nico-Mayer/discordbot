@@ -74,6 +74,37 @@ mise run check      # all of the above, in order, stopping at the first failure
 
 `mise run check` is what CI runs. There is no third-party linter: static analysis is `gofmt` and `go vet`.
 
+### Releases
+
+[GoReleaser](https://goreleaser.com) owns everything a release produces, and [svu](https://github.com/caarlos0/svu) picks the version number from the commits since the last tag. Cut a release with:
+
+```bash
+mise run next-version   # show what the next version would be
+mise run release        # verify, tag, push
+```
+
+`feat:` commits bump the minor, `fix:` and the rest bump the patch, and a `!` or `BREAKING CHANGE` bumps the minor while the project is still on `0.x`. Pass a version to override it, for example the jump to a stable major:
+
+```bash
+mise run release 1.0.0
+```
+
+The task refuses to run unless you are on `main`, the working tree is clean, `main` matches `origin/main`, the tag does not exist yet, and there is at least one commit that bumps the version. It then runs `mise run check` and pushes the tag. Everything after that happens in CI: `.github/workflows/release.yml` runs the same check again, then publishes
+
+- a GitHub release with a changelog grouped from the conventional commits since the last tag,
+- `tar.gz` archives and `checksums.txt` for `linux/amd64` and `linux/arm64`,
+- the image `ghcr.io/nico-mayer/discordbot`, tagged with the full version, the major and minor, and `latest`.
+
+Nothing is published from a local machine. To see what a release would produce without publishing anything:
+
+```bash
+mise run release-snapshot   # binaries, archives and local images under dist/
+```
+
+This replaces `docker build .`: the `Dockerfile` no longer compiles the program, it only copies the binary GoReleaser built, so it cannot be built on its own.
+
+Images are published for releases only. Pushing to `main` runs the checks but builds no image, and the old `main` and `sha-` image tags no longer exist, so a deployment must pull a version tag or `latest`.
+
 ### Layout
 
 ```

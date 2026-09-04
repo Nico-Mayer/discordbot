@@ -1,6 +1,8 @@
 [tools]
 go = "1.27.1"
+goreleaser = "2.18.0"
 "npm:@fission-ai/openspec" = "1.11.0"
+svu = "3.4.1"
 
 [tasks.build]
 description = "Compile every package"
@@ -41,3 +43,66 @@ run = [
   "mise run test",
   "mise run coverage",
 ]
+
+[tasks.release-snapshot]
+description = "Build binaries, archives and a local image without publishing anything"
+run = "goreleaser release --snapshot --clean"
+
+[tasks.next-version]
+description = "Print the version the next release would get"
+run = "svu next --v0"
+
+[tasks.release]
+description = "Verify, tag and push a release; CI builds and publishes it"
+usage = '''
+arg "[version]" help="Version to release, without the leading v. Computed from the commits since the last tag when omitted"
+'''
+run = '''
+branch=$(git rev-parse --abbrev-ref HEAD)
+if [ "$branch" != "main" ]; then
+  echo "releases are cut from main, currently on '$branch'"
+  exit 1
+fi
+
+if [ -n "$(git status --porcelain)" ]; then
+  echo "working tree is not clean"
+  exit 1
+fi
+
+git fetch --quiet --tags origin main
+if [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/main)" ]; then
+  echo "local main and origin/main differ, push or pull first"
+  exit 1
+fi
+
+current=$(svu current)
+
+if [ -n "$usage_version" ]; then
+  if ! echo "$usage_version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$'; then
+    echo "version must look like 0.2.0, without a leading v: got '$usage_version'"
+    exit 1
+  fi
+  tag="v$usage_version"
+else
+  tag=$(svu next --v0)
+fi
+
+if [ "$tag" = "$current" ]; then
+  echo "nothing to release: no commit since $current bumps the version"
+  exit 1
+fi
+
+if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+  echo "tag $tag already exists"
+  exit 1
+fi
+
+echo "releasing $tag (current $current)"
+
+mise run check
+
+git tag -a "$tag" -m "release $tag"
+git push origin "$tag"
+
+echo "pushed $tag, the release workflow takes it from here"
+'''
