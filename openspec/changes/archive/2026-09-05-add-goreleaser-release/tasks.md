@@ -37,6 +37,6 @@
 
 ## 7. First release
 
-- [ ] 7.1 Cut the first release with `mise run release` and verify it tags the version `svu` computed and that the workflow runs the CI gate before publishing
-- [ ] 7.2 Verify the GitHub release exists with a grouped changelog, archives, and `checksums.txt`, and that `ghcr.io/nico-mayer/discordbot` has the version, minor, and `latest` tags
-- [ ] 7.3 Pull the published image on the deployment target and verify the bot starts
+- [x] 7.1 Cut the first release with `mise run release` and verify it tags the version `svu` computed and that the workflow runs the CI gate before publishing
+- [x] 7.2 Verify the GitHub release exists with a grouped changelog, archives, and `checksums.txt`, and that `ghcr.io/nico-mayer/discordbot` has the version, minor, and `latest` tags
+- [x] 7.3 Pull the published image on the deployment target and verify the bot starts
