@@ -21,6 +21,13 @@ LAVALINK_PASSWORD=youshallnotpass
 IDLE_ALONE_SECONDS=60
 IDLE_EMPTY_QUEUE_SECONDS=60
 Run
+In Docker, with a local Lavalink node (uses .env):
+
+mise run up
+mise run down
+
+On the host, against a running Lavalink node:
+
 go run .
 
 Reset slash commands:

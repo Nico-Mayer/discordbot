@@ -84,3 +84,11 @@ tag=$(svu next --v0)
 echo "releasing $tag"
 git tag -a "$tag" -m "release $tag" && git push origin "$tag"
 '''
+
+[tasks.up]
+description = "Build and run the bot with a local Lavalink in Docker"
+run = "docker compose up -d --build"
+
+[tasks.down]
+description = "Stop the local Docker stack"
+run = "docker compose down"

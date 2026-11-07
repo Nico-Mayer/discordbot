@@ -1,0 +1,31 @@
+services:
+  lavalink:
+    image: ghcr.io/lavalink-devs/lavalink:4
+    restart: unless-stopped
+    environment:
+      LAVALINK_SERVER_PASSWORD: ${LAVALINK_PASSWORD}
+    volumes:
+      - ./lavalink.yml:/opt/Lavalink/application.yml:ro
+
+  bot:
+    build:
+      context: .
+      dockerfile_inline: |
+        FROM golang:1.27.3 AS build
+        WORKDIR /src
+        COPY go.mod go.sum ./
+        RUN go mod download
+        COPY . .
+        RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /bot .
+
+        FROM gcr.io/distroless/static-debian13:nonroot
+        COPY --from=build /bot /bin/bot
+        ENTRYPOINT ["/bin/bot"]
+    # Exits until Lavalink is ready, so restart instead of a healthcheck
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      LAVALINK_HOST: lavalink
+      LAVALINK_PORT: 2333
+    depends_on:
+      - lavalink
