@@ -26,6 +26,12 @@ func main() {
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+	// Restoring default signal handling once shutdown starts lets a second
+	// signal kill a hung shutdown immediately.
+	go func() {
+		<-ctx.Done()
+		stop()
+	}()
 
 	cfg, err := config.Load()
 	if err != nil {
