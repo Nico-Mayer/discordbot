@@ -143,6 +143,7 @@ func (s *Service) Enqueue(ctx context.Context, req PlayRequest) (PlayResult, err
 	}
 
 	if err := player.Update(ctx, lavalink.WithTrack(track)); err != nil {
+		s.ArmEmptyQueue(ctx)
 		return PlayResult{}, fmt.Errorf("start track: %w", err)
 	}
 	return PlayResult{Track: track}, nil

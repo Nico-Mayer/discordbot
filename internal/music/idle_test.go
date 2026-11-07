@@ -2,6 +2,7 @@ package music
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -386,4 +387,18 @@ func TestServiceQueueingDuringTheCountdownKeepsTheBotInTheChannel(t *testing.T) 
 
 	require.Nil(t, f.service.emptyTimer)
 	require.Zero(t, f.leaves(), "the bot must not have left the channel")
+}
+
+func TestEnqueueStartFailureLeavesAfterCountdown(t *testing.T) {
+	t.Parallel()
+
+	f := newIdleFixture(t, IdleTimeout{}, enabled(0))
+	f.lava.node = &fakeNode{result: &lavalink.LoadResult{LoadType: lavalink.LoadTypeTrack, Data: encodedTrack("loaded")}}
+	f.lava.player = &fakePlayer{updateErr: errors.New("node rejected the track")}
+
+	channelID := testChannelID
+	_, err := f.service.Enqueue(context.Background(), PlayRequest{Identifier: "song", VoiceChannelID: &channelID})
+	require.ErrorContains(t, err, "start track")
+
+	f.requireLeft(t)
 }
