@@ -1,6 +1,6 @@
 # Suggestions
 
-- Use Context7 skill'/find-docs' to check discords latest API
+- Use the Context7 `/find-docs` skill to check the latest Discord and Disgo API
 
 Before any Go coding, review, debugging, troubleshooting, or setup task, load the `samber/cc-skills-golang@golang-how-to` skill first - it routes to whichever other Go skills the task needs.
 
