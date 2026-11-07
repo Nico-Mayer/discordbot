@@ -7,6 +7,8 @@ import (
 
 	"github.com/disgoorg/disgolink/v3/lavalink"
 	"github.com/disgoorg/snowflake/v2"
+
+	"github.com/nico-mayer/discordbot/internal/config"
 )
 
 // EvaluateOccupancy arms or cancels the unattended-channel countdown from the
@@ -104,7 +106,7 @@ func (s *Service) cancelAlone() {
 
 // arm starts a countdown, leaving an already-running one alone so that join and
 // leave churn cannot keep pushing the deadline back.
-func (s *Service) arm(ctx context.Context, timer **time.Timer, timeout IdleTimeout, reason string) {
+func (s *Service) arm(ctx context.Context, timer **time.Timer, timeout config.IdleTimeout, reason string) {
 	if !timeout.Enabled {
 		return
 	}

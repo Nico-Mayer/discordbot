@@ -84,8 +84,8 @@ func Run(ctx context.Context, cfg config.Config, logger *slog.Logger, opts Optio
 		Voice:          client,
 		VoiceStates:    newVoiceStateAdapter(client.Caches),
 		Logger:         logger,
-		IdleAlone:      music.IdleTimeout(cfg.IdleAlone),
-		IdleEmptyQueue: music.IdleTimeout(cfg.IdleEmptyQueue),
+		IdleAlone:      cfg.IdleAlone,
+		IdleEmptyQueue: cfg.IdleEmptyQueue,
 	})
 	events := music.NewEvents(ctx, service, lava, client.ApplicationID, logger)
 

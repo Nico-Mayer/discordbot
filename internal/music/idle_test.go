@@ -9,14 +9,16 @@ import (
 	"github.com/disgoorg/disgolink/v3/lavalink"
 	"github.com/disgoorg/snowflake/v2"
 	"github.com/stretchr/testify/require"
+
+	"github.com/nico-mayer/discordbot/internal/config"
 )
 
 // leaveWait is generous enough that a scheduled countdown is observed even on a
 // loaded machine, without making a negative assertion slow.
 const leaveWait = 2 * time.Second
 
-func enabled(after time.Duration) IdleTimeout {
-	return IdleTimeout{After: after, Enabled: true}
+func enabled(after time.Duration) config.IdleTimeout {
+	return config.IdleTimeout{After: after, Enabled: true}
 }
 
 type idleFixture struct {
@@ -26,7 +28,7 @@ type idleFixture struct {
 	lava    *fakeLavalink
 }
 
-func newIdleFixture(t *testing.T, alone IdleTimeout, empty IdleTimeout) *idleFixture {
+func newIdleFixture(t *testing.T, alone config.IdleTimeout, empty config.IdleTimeout) *idleFixture {
 	t.Helper()
 
 	states := &fakeVoiceStates{}
@@ -191,7 +193,7 @@ func TestServiceDoesNotArmWhileNotConnected(t *testing.T) {
 func TestServiceNeverLeavesWhenTheTimeoutIsOff(t *testing.T) {
 	t.Parallel()
 
-	f := newIdleFixture(t, IdleTimeout{}, IdleTimeout{})
+	f := newIdleFixture(t, config.IdleTimeout{}, config.IdleTimeout{})
 	f.states.set(inChannel(selfID, testChannelID))
 
 	f.service.EvaluateOccupancy(context.Background())
@@ -392,7 +394,7 @@ func TestServiceQueueingDuringTheCountdownKeepsTheBotInTheChannel(t *testing.T) 
 func TestEnqueueStartFailureLeavesAfterCountdown(t *testing.T) {
 	t.Parallel()
 
-	f := newIdleFixture(t, IdleTimeout{}, enabled(0))
+	f := newIdleFixture(t, config.IdleTimeout{}, enabled(0))
 	f.lava.node = &fakeNode{result: &lavalink.LoadResult{LoadType: lavalink.LoadTypeTrack, Data: encodedTrack("loaded")}}
 	f.lava.player = &fakePlayer{updateErr: errors.New("node rejected the track")}
 

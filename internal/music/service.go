@@ -13,6 +13,7 @@ import (
 	"github.com/disgoorg/disgolink/v3/lavalink"
 	"github.com/disgoorg/snowflake/v2"
 
+	"github.com/nico-mayer/discordbot/internal/config"
 	"github.com/nico-mayer/discordbot/internal/queue"
 )
 
@@ -36,8 +37,8 @@ type Service struct {
 	logger        *slog.Logger
 	loadTimeout   time.Duration
 
-	idleAlone      IdleTimeout
-	idleEmptyQueue IdleTimeout
+	idleAlone      config.IdleTimeout
+	idleEmptyQueue config.IdleTimeout
 
 	// playMu serialises every decision that reads the player and then changes
 	// the queue or the track, so a command and a track-end event cannot both
@@ -51,13 +52,6 @@ type Service struct {
 	closed     bool
 }
 
-// IdleTimeout is how long the service waits before leaving for one idle reason.
-// Enabled is false when the operator turned that reason off.
-type IdleTimeout struct {
-	After   time.Duration
-	Enabled bool
-}
-
 // ServiceConfig is everything NewService needs. It is a struct because the
 // seams, the two idle timeouts and the two IDs would otherwise be eight
 // positional arguments of largely interchangeable types.
@@ -69,8 +63,8 @@ type ServiceConfig struct {
 	VoiceStates   VoiceStates
 	Logger        *slog.Logger
 
-	IdleAlone      IdleTimeout
-	IdleEmptyQueue IdleTimeout
+	IdleAlone      config.IdleTimeout
+	IdleEmptyQueue config.IdleTimeout
 }
 
 // NewService builds the service for the one guild the bot serves.
