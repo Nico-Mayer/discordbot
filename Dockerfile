@@ -1,10 +1,7 @@
-FROM alpine:3.23
+FROM gcr.io/distroless/static-debian13:nonroot
 
 ARG TARGETOS
 ARG TARGETARCH
 
-RUN apk add --no-cache ca-certificates \
-    && adduser -D -u 10001 bot
 COPY $TARGETOS/$TARGETARCH/bot /bin/bot
-USER bot
 ENTRYPOINT ["/bin/bot"]
