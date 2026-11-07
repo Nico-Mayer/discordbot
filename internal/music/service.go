@@ -108,8 +108,9 @@ type PlayResult struct {
 	Position int
 }
 
-// Enqueue normalises and resolves an identifier, joins the caller's voice
-// channel and either starts the track or appends it to the queue. An identifier
+// Enqueue normalises and resolves an identifier, then either joins the caller's
+// voice channel and starts the track, or appends it to the queue without moving
+// the bot away from its current listeners. An identifier
 // that is empty once normalised is rejected before any node is contacted.
 func (s *Service) Enqueue(ctx context.Context, req PlayRequest) (PlayResult, error) {
 	// Normalising here, once, is what keeps the value the node loads and the
@@ -128,10 +129,6 @@ func (s *Service) Enqueue(ctx context.Context, req PlayRequest) (PlayResult, err
 		return PlayResult{}, err
 	}
 
-	if err := s.voice.UpdateVoiceState(ctx, s.guildID, req.VoiceChannelID, false, false); err != nil {
-		return PlayResult{}, fmt.Errorf("join voice channel: %w", err)
-	}
-
 	s.playMu.Lock()
 	defer s.playMu.Unlock()
 
@@ -139,6 +136,10 @@ func (s *Service) Enqueue(ctx context.Context, req PlayRequest) (PlayResult, err
 	if player.Track() != nil {
 		s.queue.Add(track)
 		return PlayResult{Track: track, Queued: true, Position: s.queue.Len()}, nil
+	}
+
+	if err := s.voice.UpdateVoiceState(ctx, s.guildID, req.VoiceChannelID, false, false); err != nil {
+		return PlayResult{}, fmt.Errorf("join voice channel: %w", err)
 	}
 
 	if err := player.Update(ctx, lavalink.WithTrack(track)); err != nil {

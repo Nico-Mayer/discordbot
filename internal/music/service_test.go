@@ -511,7 +511,6 @@ func TestServiceEnqueue(t *testing.T) {
 			wantQueued:   true,
 			wantPosition: 1,
 			wantQueueLen: 1,
-			wantJoin:     true,
 		},
 		{
 			name:         "joining voice fails",
@@ -570,8 +569,12 @@ func TestServiceEnqueue(t *testing.T) {
 			require.Equal(t, tt.wantPosition, result.Position)
 			require.Equal(t, tt.wantQueueLen, s.queue.Len())
 
-			require.Len(t, voice.recorded(), 1)
-			require.Equal(t, &channelID, voice.recorded()[0].channelID)
+			if tt.wantQueued {
+				require.Empty(t, voice.recorded(), "queueing must not move the bot")
+			} else {
+				require.Len(t, voice.recorded(), 1)
+				require.Equal(t, &channelID, voice.recorded()[0].channelID)
+			}
 
 			if tt.wantIdentifier != "" {
 				require.Equal(t, []string{tt.wantIdentifier}, tt.node.loadedIdentifiers())

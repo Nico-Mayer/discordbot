@@ -10,7 +10,7 @@ The `/play` command SHALL accept a `titel` string that is either a URL or a sear
 
 The value SHALL be normalised before it is classified: surrounding whitespace is removed, wrapping angle brackets (`<` and `>`) are removed, and the URL scheme is recognised regardless of its case. Classification and loading SHALL both use the normalised value, so a value supplied as a link is loaded as a link.
 
-A value that is empty after normalisation MUST be rejected without contacting the audio node. A value that is not a URL MUST be treated as a YouTube Music search. The bot MUST join the voice channel the requesting member is currently in.
+A value that is empty after normalisation MUST be rejected without contacting the audio node. A value that is not a URL MUST be treated as a YouTube Music search. When nothing is playing, the bot MUST join the voice channel the requesting member is currently in. While a track is playing, the bot MUST stay in its current channel.
 
 Because loading a track can exceed Discord's initial interaction response window, the bot MUST acknowledge the interaction before loading and then edit that acknowledgement with the result.
 
@@ -69,6 +69,7 @@ Because loading a track can exceed Discord's initial interaction response window
 
 - **WHEN** a member in a voice channel runs `/play` while a track is already playing in that guild
 - **THEN** the bot MUST append the resolved track to the guild queue instead of interrupting playback
+- **AND** the bot MUST NOT move to the member's voice channel, even when it is a different one
 - **AND** the bot MUST edit its acknowledgement into a confirmation showing the track title, author, duration, and its position in the queue
 
 #### Scenario: Identifier resolves to a playlist
