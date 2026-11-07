@@ -580,6 +580,41 @@ func TestServiceEnqueue(t *testing.T) {
 	}
 }
 
+func TestServiceEnqueueRacingTrackEndStillPlays(t *testing.T) {
+	t.Parallel()
+
+	channelID := snowflake.ID(333333333333333333)
+	player := &fakePlayer{track: new(encodedTrack("current"))}
+	lava := &fakeLavalink{
+		node:   &fakeNode{result: &lavalink.LoadResult{LoadType: lavalink.LoadTypeTrack, Data: encodedTrack("loaded")}},
+		player: player,
+	}
+	s := newTestService(t, lava, &fakeVoice{})
+
+	advanced := make(chan struct{})
+	// The current track ends right after Enqueue saw it playing. Without
+	// serialisation Advance finds the queue empty and the new track is
+	// queued behind nothing.
+	player.onTrack = func() {
+		go func() {
+			defer close(advanced)
+			player.endTrack()
+			_, _ = s.Advance(context.Background(), player)
+		}()
+		select {
+		case <-advanced:
+		case <-time.After(50 * time.Millisecond):
+		}
+	}
+
+	_, err := s.Enqueue(context.Background(), PlayRequest{Identifier: "song", VoiceChannelID: &channelID})
+	require.NoError(t, err)
+	<-advanced
+
+	require.NotNil(t, player.Track(), "a track must be playing")
+	require.Zero(t, s.queue.Len(), "nothing may be left queued")
+}
+
 func TestServiceEnqueueQueuePositionsCountUp(t *testing.T) {
 	t.Parallel()
 

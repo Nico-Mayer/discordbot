@@ -39,6 +39,11 @@ type Service struct {
 	idleAlone      IdleTimeout
 	idleEmptyQueue IdleTimeout
 
+	// playMu serialises every decision that reads the player and then changes
+	// the queue or the track, so a command and a track-end event cannot both
+	// act on the same stale state.
+	playMu sync.Mutex
+
 	idleMu     sync.Mutex
 	aloneTimer *time.Timer
 	emptyTimer *time.Timer
@@ -127,6 +132,9 @@ func (s *Service) Enqueue(ctx context.Context, req PlayRequest) (PlayResult, err
 		return PlayResult{}, fmt.Errorf("join voice channel: %w", err)
 	}
 
+	s.playMu.Lock()
+	defer s.playMu.Unlock()
+
 	player := s.lavalink.Player(s.guildID)
 	if player.Track() != nil {
 		s.queue.Add(track)
@@ -181,6 +189,9 @@ func (s *Service) Skip(ctx context.Context) (lavalink.Track, error) {
 		return lavalink.Track{}, ErrNoPlayer
 	}
 
+	s.playMu.Lock()
+	defer s.playMu.Unlock()
+
 	next, ok := s.queue.Next()
 	if !ok {
 		return lavalink.Track{}, ErrQueueEmpty
@@ -230,6 +241,9 @@ func (s *Service) Queue() []lavalink.Track {
 
 // Advance plays the next queued track, reporting false when the queue is empty.
 func (s *Service) Advance(ctx context.Context, player Player) (bool, error) {
+	s.playMu.Lock()
+	defer s.playMu.Unlock()
+
 	next, ok := s.queue.Next()
 	if !ok {
 		return false, nil

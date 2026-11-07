@@ -149,6 +149,9 @@ func (s *Service) leaveIdle(ctx context.Context, reason string) {
 		return
 	}
 
+	s.playMu.Lock()
+	defer s.playMu.Unlock()
+
 	s.logger.InfoContext(ctx, "leaving the voice channel", slog.String("reason", reason))
 
 	if player := s.lavalink.ExistingPlayer(s.guildID); player != nil {

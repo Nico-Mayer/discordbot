@@ -63,6 +63,8 @@ type fakePlayer struct {
 	paused    bool
 	position  lavalink.Duration
 	updateErr error
+	// onTrack, when set, runs once after the next Track call has read the track.
+	onTrack func()
 
 	updates    int
 	lastUpdate lavalink.PlayerUpdate
@@ -95,8 +97,20 @@ func (f *fakePlayer) Update(_ context.Context, opts ...lavalink.PlayerUpdateOpt)
 
 func (f *fakePlayer) Track() *lavalink.Track {
 	f.mu.Lock()
+	track, hook := f.track, f.onTrack
+	f.onTrack = nil
+	f.mu.Unlock()
+
+	if hook != nil {
+		hook()
+	}
+	return track
+}
+
+func (f *fakePlayer) endTrack() {
+	f.mu.Lock()
 	defer f.mu.Unlock()
-	return f.track
+	f.track = nil
 }
 
 func (f *fakePlayer) Paused() bool {
