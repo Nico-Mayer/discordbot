@@ -2,7 +2,7 @@ schema: spec-driven
 
 context: |
   Personal Discordbot
-  Tech stack: Go, Disgo (https://github.com/disgoorg/disgo
+  Tech stack: Go, Disgo (https://github.com/disgoorg/disgo)
 
 # Per-artifact rules (optional)
 # Add custom rules for specific artifacts.
@@ -10,18 +10,14 @@ context: |
 #   rules:
 #     proposal:
 #       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
+#       - Always state what is out of scope
 #     tasks:
 #       - Break tasks into chunks of max 2 hours
 
-# Per-operation guidance (optional)
-# Add advisory guidance for how apply and archive work should be conducted.
-# This is separate from artifact rules above.
-# Example:
-#   operations:
-#     apply:
-#       guidance:
-#         - Keep test summaries concise
-#     archive:
-#       guidance:
-#         - Summarize the archive outcome before finishing
+operations:
+  propose:
+    guidance:
+      - After propose, review the proposed change in an independent subagent using the /subagent-spec-review skill
+  apply:
+    guidance:
+      - After apply, review the change using the /subagent-code-review skill
