@@ -10,6 +10,8 @@ import (
 	"testing"
 
 	"github.com/disgoorg/disgo/discord"
+	"github.com/disgoorg/disgo/events"
+	"github.com/disgoorg/disgo/handler"
 	"github.com/disgoorg/disgo/rest"
 	"github.com/disgoorg/snowflake/v2"
 	"github.com/stretchr/testify/require"
@@ -193,14 +195,18 @@ func TestUnknownErrorsAreLoggedAtErrorLevel(t *testing.T) {
 	}
 }
 
-func TestLogUnknownCommand(t *testing.T) {
+func TestHandleNotFoundLogsTheCommand(t *testing.T) {
 	t.Parallel()
 
 	logger, captured := newCapturingLogger(slog.LevelDebug)
+	interaction, err := discord.UnmarshalInteraction([]byte(`{"type":2,"id":"1","application_id":"1","token":"t","version":1,"data":{"type":1,"id":"1","name":"does-not-exist"}}`))
+	require.NoError(t, err)
+	event := &handler.InteractionEvent{
+		InteractionCreate: &events.InteractionCreate{Interaction: interaction},
+		Ctx:               context.Background(),
+	}
 
-	require.NotPanics(t, func() {
-		logUnknownCommand(context.Background(), logger, "does-not-exist")
-	})
+	require.NoError(t, handleNotFound(logger)(event))
 
 	records := captured.records(t)
 	require.Len(t, records, 1)

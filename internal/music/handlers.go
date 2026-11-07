@@ -1,7 +1,6 @@
 package music
 
 import (
-	"context"
 	"fmt"
 	"log/slog"
 
@@ -221,13 +220,9 @@ func replyError(r errorReplier, deferred bool, msg string) error {
 // handleNotFound logs an unrecognised command without crashing.
 func handleNotFound(logger *slog.Logger) handler.NotFoundHandler {
 	return func(e *handler.InteractionEvent) error {
-		logUnknownCommand(e.Ctx, logger, commandName(e))
+		logger.WarnContext(e.Ctx, "unknown command", slog.String("command", commandName(e)))
 		return nil
 	}
-}
-
-func logUnknownCommand(ctx context.Context, logger *slog.Logger, name string) {
-	logger.WarnContext(ctx, "unknown command", slog.String("command", name))
 }
 
 func commandName(e *handler.InteractionEvent) string {
