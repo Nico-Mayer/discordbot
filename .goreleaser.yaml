@@ -16,36 +16,18 @@ builds:
     ldflags:
       - -s -w
 
-archives:
-  - formats:
-      - tar.gz
-    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
-
 checksum:
-  name_template: checksums.txt
+  disable: true
+
+release:
+  skip_upload: true
 
 changelog:
   sort: asc
   use: github
-  groups:
-    - title: Features
-      regexp: '^feat(\(.+\))?!?:'
-      order: 0
-    - title: Fixes
-      regexp: '^fix(\(.+\))?!?:'
-      order: 1
-    - title: Refactors
-      regexp: '^refactor(\(.+\))?!?:'
-      order: 2
-    - title: Other
-      order: 99
   filters:
     exclude:
-      - '^docs(\(.+\))?:'
-      - '^test(\(.+\))?:'
-      - '^ci(\(.+\))?:'
-      - '^chore(\(.+\))?:'
-      - '^style(\(.+\))?:'
+      - '^(chore|docs|test|ci|style)(\(.+\))?:'
       - "^Merge pull request"
 
 dockers_v2:
