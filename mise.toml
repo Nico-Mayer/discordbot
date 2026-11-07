@@ -55,47 +55,20 @@ run = [
   { task = "skills:openspec" },
 ]
 
-[tasks.build]
-description = "Compile every package"
-run = "go build ./..."
-
-[tasks.fmt]
-description = "Fail if any file is not gofmt'd"
-shell = "bash -c"
-run = '''
-unformatted=$(gofmt -l .)
-if [ -n "$unformatted" ]; then
-  echo "not gofmt'd:"
-  echo "$unformatted"
-  exit 1
-fi
-'''
-
-[tasks.vet]
-description = "Run go vet"
-run = "go vet ./..."
-
-[tasks.test]
-description = "Run tests with the race detector"
-run = "go test -race ./..."
-
-[tasks.coverage]
-description = "Report total statement coverage (no threshold gate)"
-shell = "bash -c"
-run = '''
-go test -coverprofile=coverage.out ./...
-go tool cover -func=coverage.out | tail -n 1
-'''
-
 [tasks.check]
 description = "Build, format, vet, test and report coverage"
-run = [
-  "mise run build",
-  "mise run fmt",
-  "mise run vet",
-  "mise run test",
-  "mise run coverage",
-]
+shell = "bash -c"
+run = """
+set -e
+go build ./...
+unformatted=$(gofmt -l .)
+[ -z "$unformatted" ] || { echo "not gofmt'd: $unformatted"; exit 1; }
+go vet ./...
+# -race needs cgo, which Windows machines without a C compiler lack
+race=$([ "$(go env CGO_ENABLED)" = 1 ] && echo -race || true)
+go test $race -coverprofile=coverage.out ./...
+go tool cover -func=coverage.out | tail -n 1
+"""
 
 [tasks.release-snapshot]
 description = "Build binaries and a local image without publishing anything"
