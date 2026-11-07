@@ -70,6 +70,7 @@ func Run(ctx context.Context, cfg config.Config, logger *slog.Logger, opts Optio
 		disgobot.WithCacheConfigOpts(
 			cache.WithCaches(cache.FlagVoiceStates),
 		),
+		disgobot.WithEventManagerConfigOpts(disgobot.WithAsyncEventsEnabled()),
 	)
 	if err != nil {
 		return fmt.Errorf("build discord client: %w", err)
