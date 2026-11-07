@@ -3,6 +3,57 @@ go = "1.27.1"
 goreleaser = "2.18.0"
 "npm:@fission-ai/openspec" = "1.11.0"
 svu = "3.4.1"
+"aqua:runkids/skillshare" = "0.28"
+hk = { version = "2", workflow = "release.yml" }
+
+[settings]
+skills.dir = ".agents/skills"
+skills.auto_sync = true
+
+[hooks]
+postinstall = "mise run setup"
+
+[tasks.setup]
+description = "Sync agent skills and install git hooks (skipped in CI)"
+shell = "bash -c"
+run = """
+[ -n "$CI" ] && exit 0
+skillshare init
+mise run skills:sync
+hk install
+"""
+
+[tasks."skills:mise"]
+description = "Sync mise skills"
+hide = true
+run = [
+  "mise skills sync",
+  "mise skills sync --dir .claude/skills",
+]
+
+[tasks."skills:skillshare"]
+description = "Sync skillshare skills"
+run = [
+  "skillshare install -p",
+  "skillshare sync -p",
+]
+
+[tasks."skills:openspec"]
+description = "Sync openspec skills"
+hide = true
+run = [
+  "openspec init --tools claude",
+  "openspec init --tools agents",
+]
+
+[tasks."skills:sync"]
+description = "Sync all skills"
+# Sequential: subtasks write to the same skill dirs
+run = [
+  { task = "skills:mise" },
+  { task = "skills:skillshare" },
+  { task = "skills:openspec" },
+]
 
 [tasks.build]
 description = "Compile every package"

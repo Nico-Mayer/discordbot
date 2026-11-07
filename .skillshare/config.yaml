@@ -1,0 +1,47 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/runkids/skillshare/main/schemas/project-config.schema.json
+
+targets:
+  - universal
+  - claude
+
+skills:
+  - name: golang-code-style
+    source: github.com/samber/cc-skills-golang/skills/golang-code-style
+  - name: golang-concurrency
+    source: github.com/samber/cc-skills-golang/skills/golang-concurrency
+  - name: golang-context
+    source: github.com/samber/cc-skills-golang/skills/golang-context
+  - name: golang-continuous-integration
+    source: github.com/samber/cc-skills-golang/skills/golang-continuous-integration
+  - name: golang-data-structures
+    source: github.com/samber/cc-skills-golang/skills/golang-data-structures
+  - name: golang-design-patterns
+    source: github.com/samber/cc-skills-golang/skills/golang-design-patterns
+  - name: golang-documentation
+    source: github.com/samber/cc-skills-golang/skills/golang-documentation
+  - name: golang-error-handling
+    source: github.com/samber/cc-skills-golang/skills/golang-error-handling
+  - name: golang-how-to
+    source: github.com/samber/cc-skills-golang/skills/golang-how-to
+  - name: golang-modernize
+    source: github.com/samber/cc-skills-golang/skills/golang-modernize
+  - name: golang-naming
+    source: github.com/samber/cc-skills-golang/skills/golang-naming
+  - name: golang-safety
+    source: github.com/samber/cc-skills-golang/skills/golang-safety
+  - name: golang-security
+    source: github.com/samber/cc-skills-golang/skills/golang-security
+  - name: golang-stretchr-testify
+    source: github.com/samber/cc-skills-golang/skills/golang-stretchr-testify
+  - name: golang-testing
+    source: github.com/samber/cc-skills-golang/skills/golang-testing
+  - name: golang-troubleshooting
+    source: github.com/samber/cc-skills-golang/skills/golang-troubleshooting
+
+ignore:
+  - .DS_Store
+  - .git/
+  - __pycache__/
+
+audit:
+  block_threshold: CRITICAL

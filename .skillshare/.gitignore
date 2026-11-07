@@ -1,0 +1,22 @@
+# BEGIN SKILLSHARE MANAGED - DO NOT EDIT
+logs/
+trash/
+backups/
+skills/golang-code-style/
+skills/golang-concurrency/
+skills/golang-context/
+skills/golang-continuous-integration/
+skills/golang-data-structures/
+skills/golang-design-patterns/
+skills/golang-documentation/
+skills/golang-error-handling/
+skills/golang-how-to/
+skills/golang-modernize/
+skills/golang-naming/
+skills/golang-safety/
+skills/golang-security/
+skills/golang-stretchr-testify/
+skills/golang-testing/
+skills/golang-troubleshooting/
+skills/.metadata.json
+# END SKILLSHARE MANAGED

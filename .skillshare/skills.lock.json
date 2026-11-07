@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "skills": {
+    "golang-code-style": {
+      "source": "github.com/samber/cc-skills-golang/skills/golang-code-style",
+      "commit": "bb1d43d98a3f8ab639a0042f90d0ec524e39a477",
+      "tree_hash": "22fb4807a19faee2955bd45b3eee737cfdeaed41"
+    },
+    "golang-concurrency": {
+      "source": "github.com/samber/cc-skills-golang/skills/golang-concurrency",
+      "commit": "bb1d43d98a3f8ab639a0042f90d0ec524e39a477",
+      "tree_hash": "8396cc7b30ae9ec5dfd64b4b00b5bd6eb5460e78"
+    },
+    "golang-context": {
+      "source": "github.com/samber/cc-skills-golang/skills/golang-context",
+      "commit": "bb1d43d98a3f8ab639a0042f90d0ec524e39a477",
+      "tree_hash": "5d5555f81f4bc93c70ee1a734f323b57b81dd88a"
+    },
+    "golang-continuous-integration": {
+      "source": "github.com/samber/cc-skills-golang/skills/golang-continuous-integration",
+      "commit": "bb1d43d98a3f8ab639a0042f90d0ec524e39a477",
+      "tree_hash": "bbc64878f84f3fcdb41184715fe90f64bd42b920"
+    },
+    "golang-data-structures": {
+      "source": "github.com/samber/cc-skills-golang/skills/golang-data-structures",
+      "commit": "bb1d43d98a3f8ab639a0042f90d0ec524e39a477",
+      "tree_hash": "00d3a7743f61ec78b00bb7e8e9e086c17c0f5991"
+    },
+    "golang-design-patterns": {
+      "source": "github.com/samber/cc-skills-golang/skills/golang-design-patterns",
+      "commit": "bb1d43d98a3f8ab639a0042f90d0ec524e39a477",
+      "tree_hash": "fb87c71aa1f81e500a8ddf852e0c1bcc10d546e8"
+    },
+    "golang-documentation": {
+      "source": "github.com/samber/cc-skills-golang/skills/golang-documentation",
+      "commit": "bb1d43d98a3f8ab639a0042f90d0ec524e39a477",
+      "tree_hash": "a9e44c1be20e532335c6d05c475106b6b46fcd56"
+    },
+    "golang-error-handling": {
+      "source": "github.com/samber/cc-skills-golang/skills/golang-error-handling",
+      "commit": "bb1d43d98a3f8ab639a0042f90d0ec524e39a477",
+      "tree_hash": "aaad19ba1ebd07b7498f30805f40ae56087d81e6"
+    },
+    "golang-how-to": {
+      "source": "github.com/samber/cc-skills-golang/skills/golang-how-to",
+      "commit": "bb1d43d98a3f8ab639a0042f90d0ec524e39a477",
+      "tree_hash": "86b8fe3926d68943e8c0a2773b522533b3c699ce"
+    },
+    "golang-modernize": {
+      "source": "github.com/samber/cc-skills-golang/skills/golang-modernize",
+      "commit": "bb1d43d98a3f8ab639a0042f90d0ec524e39a477",
+      "tree_hash": "b94386e9996fcfc57e65c50b0f489cce15c86f9f"
+    },
+    "golang-naming": {
+      "source": "github.com/samber/cc-skills-golang/skills/golang-naming",
+      "commit": "bb1d43d98a3f8ab639a0042f90d0ec524e39a477",
+      "tree_hash": "181da3ab2e1d18b6ce5bac8c9b166f9ff277e190"
+    },
+    "golang-safety": {
+      "source": "github.com/samber/cc-skills-golang/skills/golang-safety",
+      "commit": "bb1d43d98a3f8ab639a0042f90d0ec524e39a477",
+      "tree_hash": "1de15ca12c35b1c7e26bdf45f136ce799ebb1388"
+    },
+    "golang-security": {
+      "source": "github.com/samber/cc-skills-golang/skills/golang-security",
+      "commit": "bb1d43d98a3f8ab639a0042f90d0ec524e39a477",
+      "tree_hash": "07087f49965f376cfccc21c763cb5b1504023c8b"
+    },
+    "golang-stretchr-testify": {
+      "source": "github.com/samber/cc-skills-golang/skills/golang-stretchr-testify",
+      "commit": "bb1d43d98a3f8ab639a0042f90d0ec524e39a477",
+      "tree_hash": "765107dd093b9bfa95915936edb7511013504dc6"
+    },
+    "golang-testing": {
+      "source": "github.com/samber/cc-skills-golang/skills/golang-testing",
+      "commit": "bb1d43d98a3f8ab639a0042f90d0ec524e39a477",
+      "tree_hash": "dcae2aa30026d1ffba3397da2d990a0f8566fccc"
+    },
+    "golang-troubleshooting": {
+      "source": "github.com/samber/cc-skills-golang/skills/golang-troubleshooting",
+      "commit": "bb1d43d98a3f8ab639a0042f90d0ec524e39a477",
+      "tree_hash": "b5aa3ed0718d1332274696399b12077aaa76d1e4"
+    }
+  }
+}
