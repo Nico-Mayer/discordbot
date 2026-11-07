@@ -61,6 +61,7 @@ run = "go build ./..."
 
 [tasks.fmt]
 description = "Fail if any file is not gofmt'd"
+shell = "bash -c"
 run = '''
 unformatted=$(gofmt -l .)
 if [ -n "$unformatted" ]; then
@@ -80,6 +81,7 @@ run = "go test -race ./..."
 
 [tasks.coverage]
 description = "Report total statement coverage (no threshold gate)"
+shell = "bash -c"
 run = '''
 go test -coverprofile=coverage.out ./...
 go tool cover -func=coverage.out | tail -n 1
@@ -105,6 +107,7 @@ run = "svu next --v0"
 
 [tasks.release]
 description = "Verify, tag and push a release; CI builds and publishes it"
+shell = "bash -c"
 usage = '''
 arg "[version]" help="Version to release, without the leading v. Computed from the commits since the last tag when omitted"
 '''
