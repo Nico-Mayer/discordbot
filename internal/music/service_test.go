@@ -193,6 +193,18 @@ func TestServiceSkip(t *testing.T) {
 		require.Equal(t, 1, s.queue.Len())
 	})
 
+	t.Run("resumes a paused player", func(t *testing.T) {
+		t.Parallel()
+
+		player := &fakePlayer{track: new(encodedTrack("current")), paused: true}
+		s := newTestService(t, &fakeLavalink{existingPlayer: player}, nil)
+		s.queue.Add(encodedTrack("next"))
+
+		_, err := s.Skip(context.Background())
+		require.NoError(t, err)
+		require.False(t, player.Paused())
+	})
+
 	t.Run("empty queue keeps the current track playing", func(t *testing.T) {
 		t.Parallel()
 

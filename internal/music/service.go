@@ -186,7 +186,7 @@ func (s *Service) Skip(ctx context.Context) (lavalink.Track, error) {
 		return lavalink.Track{}, ErrQueueEmpty
 	}
 
-	if err := player.Update(ctx, lavalink.WithTrack(next)); err != nil {
+	if err := player.Update(ctx, lavalink.WithTrack(next), lavalink.WithPaused(false)); err != nil {
 		return lavalink.Track{}, fmt.Errorf("skip to next track: %w", err)
 	}
 	return next, nil
