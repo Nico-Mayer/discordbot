@@ -32,7 +32,6 @@ mise run check
 Other tasks are defined in mise.toml.
 
 Release
-mise run next-version
 mise run release
 
 Releases are versioned with svu and built/published through GoReleaser and GitHub Actions.
