@@ -104,7 +104,7 @@ func (c *commands) nowPlaying(_ discord.SlashCommandInteractionData, e *handler.
 
 func (c *commands) queue(_ discord.SlashCommandInteractionData, e *handler.CommandEvent) error {
 	var current *lavalink.Track
-	if track, ok := c.service.Current(); ok {
+	if track, _, err := c.service.NowPlaying(); err == nil {
 		current = &track
 	}
 	return reply(e, queueEmbed(current, c.service.Queue()))
